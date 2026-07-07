@@ -1,23 +1,29 @@
 :root {
-  --primary: #1890ff;
-  --primary-hover: #40a9ff;
-  --primary-active: #096dd9;
-  --success: #52c41a;
-  --warning: #faad14;
-  --danger: #ff4d4f;
-  --info: #8c8c8c;
+  --primary: #1a5276;
+  --primary-hover: #2c6b8f;
+  --primary-active: #0d3d5c;
+  --primary-gradient: linear-gradient(180deg, #2c6b8f, #0d3d5c);
 
-  --sidebar-bg: #001529;
+  --success: #148f77;
+  --warning: #b7950b;
+  --danger: #a04040;
+  --info: #5d6d7e;
+
+  --sidebar-bg: linear-gradient(180deg, #0d2847, #071a30);
+  --sidebar-hover: rgba(255,255,255,0.1);
+  --sidebar-active: #1a5276;
+
   --header-height: 48px;
-  --main-bg: #f0f2f5;
-  --border-color: #e8e8e8;
+  --main-bg: #d4d9d9;
+  --card-bg: #f0f2f2;
+  --border-color: #8a9ba8;
 
-  --text-primary: #262626;
-  --text-secondary: #595959;
-  --text-muted: #8c8c8c;
+  --text-primary: #1a1a2e;
+  --text-secondary: #3d4a5c;
+  --text-muted: #7a8a9a;
 
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  --font-size-base: 13px;
-  --font-size-sm: 12px;
-  --font-size-lg: 14px;
+  --font-family: 'Tahoma', 'Segoe UI', 'Arial', 'PingFang SC', sans-serif;
+  --font-size-base: 12px;
+  --font-size-sm: 11px;
+  --font-size-lg: 13px;
 }

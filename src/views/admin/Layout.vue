@@ -126,12 +126,12 @@ function handleLogout() { ;['access_token','refresh_token','user_role','user_id'
 
 <style scoped>
 .layout { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
-.sidebar { width: 200px; background: #001529; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar { width: 200px; background: linear-gradient(180deg, #2d5a9a, #1a4a8a); display: flex; flex-direction: column; flex-shrink: 0; }
 .sidebar-logo { height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
 .sidebar-title { font-size: 14px; color: #fff; font-weight: 600; white-space: nowrap; }
 .el-menu { flex: 1; overflow-y: auto; }
 .el-menu :deep(.el-menu-item.is-active) { background: #1890ff !important; }
-.el-menu :deep(.el-sub-menu .el-menu) { background: #000c17 !important; }
+.el-menu :deep(.el-sub-menu .el-menu) { background: rgba(0,0,0,0.1) !important; }
 .sidebar-footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; flex-shrink: 0; }
 .sidebar-user { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.65); font-size: 13px; }
 .sidebar-user-icon { width: 28px; height: 28px; border-radius: 2px; background: #1890ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
