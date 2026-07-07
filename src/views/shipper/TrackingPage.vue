@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="tracking-page">
     <el-row :gutter="16">
-      <el-col :span="10">
+      <el-col :span="8">
         <el-card>
           <template #header>
             <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -22,11 +22,11 @@
           <el-empty v-if="!loadingOrders && orders.length === 0" description="暂无订单" />
         </el-card>
       </el-col>
-      <el-col :span="14">
+      <el-col :span="16">
         <el-card>
           <template #header>
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span>订单追踪</span>
+              <span>物流追踪</span>
               <div>
                 <el-input v-model="searchId" placeholder="输入订单ID查询" size="small" style="width:160px;margin-right:8px;" @keyup.enter="fetchTracking" />
                 <el-button type="primary" size="small" :loading="loading" @click="fetchTracking">查询</el-button>
@@ -34,18 +34,51 @@
             </div>
           </template>
           <div v-if="tracking">
-            <el-descriptions :column="2" border>
+            <el-descriptions :column="2" border style="margin-bottom:20px;">
               <el-descriptions-item label="订单号" :span="2">{{ tracking.order_no }}</el-descriptions-item>
               <el-descriptions-item label="状态"><el-tag :type="tagType(tracking.order_status)" effect="dark">{{ tagLabel(tracking.order_status) }}</el-tag></el-descriptions-item>
               <el-descriptions-item label="船舶">{{ tracking.vessel_name || '-' }}</el-descriptions-item>
               <el-descriptions-item label="航线">{{ tracking.line_name || '-' }}</el-descriptions-item>
               <el-descriptions-item label="起运港">{{ tracking.departure_port || '-' }}</el-descriptions-item>
               <el-descriptions-item label="目的港">{{ tracking.destination_port || '-' }}</el-descriptions-item>
+            </el-descriptions>
+
+            <div v-if="tracking.stops && tracking.stops.length > 0" style="padding:20px 0;">
+              <div style="font-weight:600;margin-bottom:16px;font-size:15px;">航次时间线</div>
+              <el-steps :active="tracking.current_stop_index" direction="vertical">
+                <el-step v-for="(stop, i) in tracking.stops" :key="stop.port_id">
+                  <template #title>
+                    <span :style="{ fontWeight: i === tracking.current_stop_index ? 'bold' : 'normal' }">
+                      {{ stop.port_name }}
+                      <el-tag v-if="i === tracking.current_stop_index" size="small" type="warning" style="margin-left:8px;">当前</el-tag>
+                      <el-tag v-else-if="stop.status === 'completed'" size="small" type="success" style="margin-left:8px;">已离港</el-tag>
+                      <el-tag v-else-if="stop.status === 'berthed'" size="small" type="primary" style="margin-left:8px;">已靠泊</el-tag>
+                      <el-tag v-else-if="stop.status === 'overdue'" size="small" type="danger" style="margin-left:8px;">逾期</el-tag>
+                    </span>
+                  </template>
+                  <template #description>
+                    <div style="font-size:12px;color:#8c8c8c;">
+                      <div v-if="stop.planned_arrival">计划到港：{{ formatTime(stop.planned_arrival) }}</div>
+                      <div v-if="stop.actual_arrival">实际到港：{{ formatTime(stop.actual_arrival) }}</div>
+                      <div v-if="stop.planned_departure">计划离港：{{ formatTime(stop.planned_departure) }}</div>
+                      <div v-if="stop.actual_departure" style="color:#52c41a;">实际离港：{{ formatTime(stop.actual_departure) }}</div>
+                      <div v-if="stop.cargo_operations && stop.cargo_operations.length > 0" style="margin-top:4px;">
+                        <el-tag v-for="(op, oi) in stop.cargo_operations" :key="oi" :type="op.operation === 'LOAD' ? '' : 'warning'" size="small" style="margin-right:4px;margin-bottom:2px;">
+                          {{ op.operation === 'LOAD' ? '装' : '卸' }}{{ op.cargo_name }}{{ op.weight_ton }}吨
+                        </el-tag>
+                      </div>
+                    </div>
+                  </template>
+                </el-step>
+              </el-steps>
+            </div>
+
+            <el-descriptions :column="3" border style="margin-top:16px;">
               <el-descriptions-item label="计划离港">{{ formatTime(tracking.departure_planned) }}</el-descriptions-item>
               <el-descriptions-item label="实际离港">{{ formatTime(tracking.departure_actual) }}</el-descriptions-item>
+              <el-descriptions-item label="装货时间">{{ formatTime(tracking.load_time) }}</el-descriptions-item>
               <el-descriptions-item label="计划到港">{{ formatTime(tracking.arrival_planned) }}</el-descriptions-item>
               <el-descriptions-item label="实际到港">{{ formatTime(tracking.arrival_actual) }}</el-descriptions-item>
-              <el-descriptions-item label="装货时间">{{ formatTime(tracking.load_time) }}</el-descriptions-item>
               <el-descriptions-item label="卸货时间">{{ formatTime(tracking.unload_time) }}</el-descriptions-item>
             </el-descriptions>
           </div>
@@ -79,8 +112,6 @@ async function loadOrders() {
   loadingOrders.value = true
   try {
     const params = { page: 1, page_size: 20 }
-    const userId = localStorage.getItem('user_id')
-    if (userId) params.shipper_company_id = userId
     if (statusFilter.value !== '' && statusFilter.value !== null) params.order_status = statusFilter.value
     const res = await getOrderListApi(params)
     orders.value = res.data || []
@@ -113,5 +144,5 @@ onMounted(() => {
 <style scoped>
 .tracking-page { padding: 20px; }
 .el-table :deep(.el-table__row) { cursor: pointer; }
-.el-table :deep(.current-row) { background: #e6f7ff !important; }
+.el-table :deep(.current-row) { background: #d4e4f0 !important; }
 </style>

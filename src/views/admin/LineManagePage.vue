@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="line-manage-page">
     <el-card>
-      <template #header><span>航线管理</span><el-button size="small" style="float: right; margin-right: 8px" @click="handleExportLines">导出</el-button><el-button size="small" style="float: right; margin-right: 8px" @click="handleImportClick">导入</el-button><el-button size="small" type="primary" style="float: right" @click="openCreate">添加航线</el-button><input type="file" ref="fileInputLine" accept=".xlsx" style="display:none" @change="handleImportLines" /></template>
+      <template #header><span>航线管理</span><div style="float: right; display: flex; gap: 8px"><el-autocomplete v-model="query.keyword" :fetch-suggestions="searchSuggestions" placeholder="搜索航线名称" clearable style="width: 200px" @select="onSearchSelect" @keyup.enter="handleSearch" /><el-button size="small" @click="handleSearch">搜索</el-button><el-button size="small" @click="handleExportLines">导出</el-button><el-button size="small" @click="handleImportClick">导入</el-button><el-button size="small" type="primary" @click="openCreate">添加航线</el-button></div><input type="file" ref="fileInputLine" accept=".xlsx" style="display:none" @change="handleImportLines" /></template>
       <el-table :data="list" border stripe v-loading="loading">
         <el-table-column prop="line_id" label="ID" width="60" /><el-table-column prop="line_name" label="航线名称" min-width="180" />
         <el-table-column prop="departure_port_name" label="起运港" width="120" /><el-table-column prop="destination_port_name" label="目的港" width="120" />
@@ -42,12 +42,13 @@ import { getLineListApi, getShippingCompanyListApi } from '@/api/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 
-const loading = ref(false); const saving = ref(false); const list = ref([]); const meta = ref({}); const companies = ref([]); const fileInputLine = ref(null)
-const query = reactive({ page: 1, page_size: 10 }); const dialogVisible = ref(false); const isEdit = ref(false)
+const loading = ref(false); const saving = ref(false); const list = ref([]); const meta = ref({}); const companies = ref([]); const fileInputLine = ref(null); const searchOptions = ref([])
+const query = reactive({ page: 1, page_size: 10, keyword: '' }); const dialogVisible = ref(false); const isEdit = ref(false)
 let editId = null
 const form = reactive({ line_name: '', shipping_company_id: null, departure_port_name: '', destination_port_name: '', port_sequence: '', total_distance_nm: 0, description: '' })
 
 async function loadData() { loading.value = true; try { const res = await getLineListApi(query); list.value = res.data || []; meta.value = res.meta || {} } catch (e) { ElMessage.error(e.message || '加载失败') } finally { loading.value = false } }
+function handleSearch() { query.page = 1; loadData() }
 function handleExportLines() { const token = localStorage.getItem('access_token'); window.open('/api/v1/export/shipping-lines?token=' + token, '_blank') }
 function handleImportClick() { fileInputLine.value.click() }
 async function handleImportLines(e) { const file = e.target.files[0]; if (!file) return; const formData = new FormData(); formData.append('file', file); const token = localStorage.getItem('access_token'); try { await axios.post('/api/v1/import/shipping-lines', formData, { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }); ElMessage.success('导入成功'); loadData() } catch (err) { ElMessage.error(err.response?.data?.message || '导入失败') }; e.target.value = '' }
@@ -73,6 +74,9 @@ async function handleSave() {
   finally { saving.value = false }
 }
 async function handleDelete(row) { try { await ElMessageBox.confirm(`确认删除航线 "${row.line_name}"？`, '提示'); await deleteLineApi(row.line_id); ElMessage.success('已删除'); await loadData() } catch { /* ignore */ } }
+async function loadSearchOptions() { try { const res = await getLineListApi({ page: 1, page_size: 200 }); searchOptions.value = (res.data || []).map(l => ({ value: l.line_name })) } catch {} }
+function searchSuggestions(queryString, cb) { const r = queryString ? searchOptions.value.filter(s => s.value.includes(queryString)) : searchOptions.value; cb(r) }
+function onSearchSelect(item) { query.keyword = item.value; handleSearch() }
 
-onMounted(async () => { await loadData(); try { const res = await getShippingCompanyListApi({ page: 1, page_size: 100 }); companies.value = res.data || [] } catch { /* ignore */ } })
+onMounted(async () => { await loadData(); try { const res = await getShippingCompanyListApi({ page: 1, page_size: 100 }); companies.value = res.data || [] } catch { /* ignore */ }; loadSearchOptions() })
 </script>

@@ -151,11 +151,11 @@ async function nextStep() {
 function prevStep() { if (activeStep.value > 0) activeStep.value-- }
 
 async function handleSubmit() {
-  submitting.value = true
   const userId = localStorage.getItem('user_id')
-  if (!userId) { ElMessage.error('用户信息丢失，请重新登录'); submitting.value = false; return }
-  const shipperCompanyId = Number(userId)
-  if (!shipperCompanyId) { ElMessage.error('用户ID无效'); submitting.value = false; return }
+  if (!userId) { ElMessage.error('用户信息丢失，请重新登录'); return }
+  if (!formData.value.start_port_id || !formData.value.end_port_id) { ElMessage.warning('请先选择起运港和目的港'); return }
+  if (!selectedVoyage.value) { ElMessage.warning('请先选择推荐航程'); return }
+  submitting.value = true
   try {
     const toNum = v => (v === '' || v === null || v === undefined) ? undefined : Number(v)
     const payload = {

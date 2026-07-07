@@ -56,18 +56,18 @@ const userName = ref(localStorage.getItem('user_name') || '')
 const tagType = s => ({ 0: 'info', 1: 'primary', 2: 'warning', 3: 'success', 4: 'danger' })[s] || 'info'
 const tagLabel = s => ({ 0: '待确认', 1: '已确认', 2: '运输中', 3: '已完成', 4: '已取消' })[s] || s
 const statCards = ref([
-  { label: '总订单', value: 0, icon: Document, color: '#1890ff' },
+  { label: '总订单', value: 0, icon: Document, color: '#1a5276' },
   { label: '运输中', value: 0, icon: Clock, color: '#faad14' },
   { label: '已完成', value: 0, icon: CircleCheck, color: '#52c41a' },
   { label: '已取消', value: 0, icon: Close, color: '#ff4d4f' }
 ])
 const quickStats = ref([
-  { label: '总重量(吨)', value: 0, color: '#1890ff' },
+  { label: '总重量(吨)', value: 0, color: '#1a5276' },
   { label: '总费用', value: '¥0.00', color: '#52c41a' },
   { label: '已完成订单', value: 0, color: '#722ed1' }
 ])
 async function loadOrders() { loading.value = true; try { const userId = localStorage.getItem('user_id'); const res = await getOrderListApi({ shipper_company_id: userId, page: 1, page_size: 10 }); orders.value = res.data || [] } catch { orders.value = [] } finally { loading.value = false } }
-async function loadStats() { try { const now = new Date(); const y = now.getFullYear(); const m = String(now.getMonth()+1).padStart(2,'0'); const d = String(now.getDate()).padStart(2,'0'); const res = await getOrderStatsApi({ start_date: (y-1)+'-'+m+'-'+d, end_date: y+'-'+m+'-'+d }); const data = res.data || {}; statCards.value = [ { label: '总订单', value: data.total_orders || 0, icon: Document, color: '#1890ff' }, { label: '运输中', value: data.in_transit || 0, icon: Clock, color: '#faad14' }, { label: '已完成', value: data.completed || 0, icon: CircleCheck, color: '#52c41a' }, { label: '已取消', value: data.cancelled || 0, icon: Close, color: '#ff4d4f' } ]; quickStats.value = [ { label: '总重量(吨)', value: (data.total_weight || 0).toFixed(2), color: '#1890ff' }, { label: '总费用', value: '¥' + (data.total_cost || 0).toFixed(2), color: '#52c41a' }, { label: '已完成订单', value: data.completed || 0, color: '#722ed1' } ] } catch {} }
+async function loadStats() { try { const now = new Date(); const y = now.getFullYear(); const m = String(now.getMonth()+1).padStart(2,'0'); const d = String(now.getDate()).padStart(2,'0'); const res = await getOrderStatsApi({ start_date: (y-1)+'-'+m+'-'+d, end_date: y+'-'+m+'-'+d }); const data = res.data || {}; statCards.value = [ { label: '总订单', value: data.total_orders || 0, icon: Document, color: '#1a5276' }, { label: '运输中', value: data.in_transit || 0, icon: Clock, color: '#faad14' }, { label: '已完成', value: data.completed || 0, icon: CircleCheck, color: '#52c41a' }, { label: '已取消', value: data.cancelled || 0, icon: Close, color: '#ff4d4f' } ]; quickStats.value = [ { label: '总重量(吨)', value: (data.total_weight || 0).toFixed(2), color: '#1a5276' }, { label: '总费用', value: '¥' + (data.total_cost || 0).toFixed(2), color: '#52c41a' }, { label: '已完成订单', value: data.completed || 0, color: '#722ed1' } ] } catch {} }
 onMounted(() => { loadOrders(); loadStats() })
 </script>
 

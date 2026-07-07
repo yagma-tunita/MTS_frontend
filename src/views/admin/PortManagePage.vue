@@ -1,13 +1,14 @@
 <template>
   <div class="port-manage-page">
     <el-card>
-      <template #header><span>港口管理</span><el-button size="small" style="float: right; margin-right: 8px" @click="handleExportPorts">导出</el-button><el-button size="small" style="float: right; margin-right: 8px" @click="handleImportClick">导入</el-button><el-button size="small" type="primary" style="float: right" @click="openCreate">添加港口</el-button><input type="file" ref="fileInputPort" accept=".xlsx" style="display:none" @change="handleImportPorts" /></template>
+      <template #header><span>港口管理</span><div style="float: right; display: flex; gap: 8px"><el-autocomplete v-model="query.keyword" :fetch-suggestions="searchSuggestions" placeholder="搜索港口名称/代码" clearable style="width: 200px" @select="onSearchSelect" @keyup.enter="handleSearch" /><el-button size="small" @click="handleSearch">搜索</el-button><el-button size="small" style="margin-right: 0" @click="handleExportPorts">导出</el-button><el-button size="small" @click="handleImportClick">导入</el-button><el-button size="small" type="primary" @click="openCreate">添加港口</el-button></div><input type="file" ref="fileInputPort" accept=".xlsx" style="display:none" @change="handleImportPorts" /></template>
       <el-table :data="list" border stripe v-loading="loading">
         <el-table-column prop="port_id" label="ID" width="60" /><el-table-column prop="port_name" label="港口名称" width="180" />
         <el-table-column prop="port_code" label="港口代码" width="120" />
         <el-table-column label="城市" width="120"><template #default="{ row }">{{ row.city?.city_name || '-' }}</template></el-table-column>
         <el-table-column label="国家" width="120"><template #default="{ row }">{{ row.city?.country || '-' }}</template></el-table-column>
         <el-table-column prop="port_type" label="类型" width="100" /><el-table-column prop="latitude" label="纬度" width="100" /><el-table-column prop="longitude" label="经度" width="100" />
+        <el-table-column label="吃水(m)" width="80"><template #default="{ row }">{{ row.max_draft_meter || '-' }}</template></el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }"><el-button size="small" @click="openEdit(row)">编辑</el-button><el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button></template>
         </el-table-column>
@@ -40,12 +41,13 @@ import { getPortListApi, getCityListApi } from '@/api/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 
-const loading = ref(false); const saving = ref(false); const list = ref([]); const meta = ref({}); const cities = ref([]); const fileInputPort = ref(null)
-const query = reactive({ page: 1, page_size: 10 }); const dialogVisible = ref(false); const isEdit = ref(false)
+const loading = ref(false); const saving = ref(false); const list = ref([]); const meta = ref({}); const cities = ref([]); const fileInputPort = ref(null); const searchOptions = ref([])
+const query = reactive({ page: 1, page_size: 10, keyword: '' }); const dialogVisible = ref(false); const isEdit = ref(false)
 let editId = null
 const form = reactive({ port_name: '', port_code: '', city_id: null, port_type: '', latitude: 0, longitude: 0, max_draft_meter: 0 })
 
 async function loadData() { loading.value = true; try { const res = await getPortListApi(query); list.value = res.data || []; meta.value = res.meta || {} } catch (e) { ElMessage.error(e.message || '加载失败') } finally { loading.value = false } }
+function handleSearch() { query.page = 1; loadData() }
 function handleExportPorts() { const token = localStorage.getItem('access_token'); window.open('/api/v1/export/ports?token=' + token, '_blank') }
 function handleImportClick() { fileInputPort.value.click() }
 async function handleImportPorts(e) { const file = e.target.files[0]; if (!file) return; const formData = new FormData(); formData.append('file', file); const token = localStorage.getItem('access_token'); try { await axios.post('/api/v1/import/ports', formData, { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }); ElMessage.success('导入成功'); loadData() } catch (err) { ElMessage.error(err.response?.data?.message || '导入失败') }; e.target.value = '' }
@@ -54,5 +56,8 @@ function openCreate() { isEdit.value = false; editId = null; resetForm(); dialog
 function openEdit(row) { isEdit.value = true; editId = row.port_id; form.port_name = row.port_name; form.port_code = row.port_code; form.city_id = row.city_id; form.port_type = row.port_type; form.latitude = row.latitude; form.longitude = row.longitude; form.max_draft_meter = row.max_draft_meter; dialogVisible.value = true }
 async function handleSave() { saving.value = true; try { if (isEdit.value && editId) { await updatePortApi(editId, { ...form }); ElMessage.success('更新成功') } else { await createPortApi({ ...form }); ElMessage.success('添加成功') }; dialogVisible.value = false; await loadData() } catch (e) { ElMessage.error(e.message || '操作失败') } finally { saving.value = false } }
 async function handleDelete(row) { try { await ElMessageBox.confirm(`确认删除港口 "${row.port_name}"？`, '提示'); await deletePortApi(row.port_id); ElMessage.success('已删除'); await loadData() } catch { /* ignore */ } }
-onMounted(async () => { await loadData(); try { const res = await getCityListApi({ page: 1, page_size: 100 }); cities.value = res.data || [] } catch {} })
+async function loadSearchOptions() { try { const res = await getPortListApi({ page: 1, page_size: 200 }); searchOptions.value = (res.data || []).map(p => ({ value: p.port_name + (p.port_code ? ' (' + p.port_code + ')' : '') })) } catch {} }
+function searchSuggestions(queryString, cb) { const r = queryString ? searchOptions.value.filter(s => s.value.includes(queryString)) : searchOptions.value; cb(r) }
+function onSearchSelect(item) { query.keyword = item.value; handleSearch() }
+onMounted(async () => { await loadData(); try { const res = await getCityListApi({ page: 1, page_size: 100 }); cities.value = res.data || [] } catch {}; loadSearchOptions() })
 </script>

@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="shipping-page">
     <el-card>
-      <template #header><span>海运公司管理</span></template>
+      <template #header><span>海运公司管理</span><div style="float: right; display: flex; gap: 8px"><el-autocomplete v-model="query.keyword" :fetch-suggestions="searchSuggestions" placeholder="搜索公司名称/联系人" clearable style="width: 220px" @select="onSearchSelect" @keyup.enter="handleSearch" /><el-button size="small" @click="handleSearch">搜索</el-button></div></template>
       <el-table :data="list" border stripe v-loading="loading">
         <el-table-column prop="company_id" label="ID" width="60" />
         <el-table-column prop="company_name" label="公司名称" min-width="180" />
@@ -38,14 +38,18 @@ import { ref, reactive, onMounted } from 'vue'
 import { getShippingListApi, updateShippingApi, deleteShippingApi } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-const loading = ref(false); const saving = ref(false); const list = ref([]); const meta = ref({})
-const query = reactive({ page: 1, page_size: 10 }); const editVisible = ref(false)
+const loading = ref(false); const saving = ref(false); const list = ref([]); const meta = ref({}); const searchOptions = ref([])
+const query = reactive({ page: 1, page_size: 10, keyword: '' }); const editVisible = ref(false)
 const editForm = reactive({ company_name: '', login_username: '', contact_person: '', contact_phone: '', address: '', account_status: 1 })
 let editId = null
 
 async function loadData() { loading.value = true; try { const res = await getShippingListApi(query); list.value = res.data || []; meta.value = res.meta || {} } catch (e) { ElMessage.error(e.message || '加载失败') } finally { loading.value = false } }
+function handleSearch() { query.page = 1; loadData() }
 function openEdit(row) { editId = row.company_id; editForm.company_name = row.company_name; editForm.login_username = row.login_username; editForm.contact_person = row.contact_person; editForm.contact_phone = row.contact_phone; editForm.address = row.address; editForm.account_status = row.account_status; editVisible.value = true }
 async function handleSave() { if (!editId) return; saving.value = true; try { await updateShippingApi(editId, { ...editForm }); ElMessage.success('更新成功'); editVisible.value = false; await loadData() } catch (e) { ElMessage.error(e.message || '更新失败') } finally { saving.value = false } }
 async function handleDelete(row) { try { await ElMessageBox.confirm(`确认删除海运公司 "${row.company_name}"？`, '提示'); await deleteShippingApi(row.company_id); ElMessage.success('已删除'); await loadData() } catch { /* ignore */ } }
-onMounted(loadData)
+async function loadSearchOptions() { try { const res = await getShippingListApi({ page: 1, page_size: 200 }); searchOptions.value = (res.data || []).map(s => ({ value: s.company_name })) } catch {} }
+function searchSuggestions(queryString, cb) { const r = queryString ? searchOptions.value.filter(s => s.value.includes(queryString)) : searchOptions.value; cb(r) }
+function onSearchSelect(item) { query.keyword = item.value; handleSearch() }
+onMounted(() => { loadData(); loadSearchOptions() })
 </script>

@@ -2,7 +2,7 @@
   <div class="register-page">
     <div class="register-left">
       <div class="register-left-content">
-        <div class="register-logo"><el-icon :size="28" color="#1890ff"><Ship /></el-icon><span>MTS 航运物流管理系统</span></div>
+        <div class="register-logo"><el-icon :size="28" color="#1a5276"><Ship /></el-icon><span>MTS 航运物流管理系统</span></div>
         <div class="register-left-body"><h1>创建您的企业账号</h1><p>填写以下信息完成注册，开始使用航运物流管理平台</p></div>
         <div class="register-left-footer">Copyright &copy; 2026 MTS. All rights reserved.</div>
       </div>

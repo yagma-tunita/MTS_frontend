@@ -39,6 +39,37 @@
       </div>
       <el-empty v-else-if="loadingRoute" description="加载航线信息..." />
 
+      <el-divider content-position="left">物流追踪时间线</el-divider>
+      <div v-if="trackingStops.length > 0" style="padding:12px 0;">
+        <el-steps :active="trackingCurrent" direction="vertical">
+          <el-step v-for="(stop, i) in trackingStops" :key="stop.port_id">
+            <template #title>
+              <span :style="{ fontWeight: i === trackingCurrent ? 'bold' : 'normal' }">
+                {{ stop.port_name }}
+                <el-tag v-if="i === trackingCurrent" size="small" type="warning" style="margin-left:8px;">当前</el-tag>
+                <el-tag v-else-if="stop.status === 'completed'" size="small" type="success" style="margin-left:8px;">已离港</el-tag>
+                <el-tag v-else-if="stop.status === 'berthed'" size="small" type="primary" style="margin-left:8px;">已靠泊</el-tag>
+              </span>
+            </template>
+            <template #description>
+              <div style="font-size:12px;color:#8c8c8c;">
+                <div v-if="stop.planned_arrival">计划到港：{{ formatTime(stop.planned_arrival) }}</div>
+                <div v-if="stop.actual_arrival">实际到港：{{ formatTime(stop.actual_arrival) }}</div>
+                <div v-if="stop.planned_departure">计划离港：{{ formatTime(stop.planned_departure) }}</div>
+                <div v-if="stop.actual_departure" style="color:#52c41a;">实际离港：{{ formatTime(stop.actual_departure) }}</div>
+                <div v-if="stop.cargo_operations && stop.cargo_operations.length > 0" style="margin-top:4px;">
+                  <el-tag v-for="(op, oi) in stop.cargo_operations" :key="oi" :type="op.operation === 'LOAD' ? '' : 'warning'" size="small" style="margin-right:4px;margin-bottom:2px;">
+                    {{ op.operation === 'LOAD' ? '装' : '卸' }}{{ op.cargo_name }}{{ op.weight_ton }}吨
+                  </el-tag>
+                </div>
+              </div>
+            </template>
+          </el-step>
+        </el-steps>
+      </div>
+      <el-empty v-else-if="loadingTracking" description="加载追踪信息..." />
+      <div v-else style="padding:12px 0;color:#8c8c8c;">暂无追踪数据</div>
+
       <el-descriptions title="时间记录" :column="3" border style="margin-top: 16px;">
         <el-descriptions-item label="创建时间">{{ formatTime(order.create_time) }}</el-descriptions-item>
         <el-descriptions-item label="最后更新">{{ formatTime(order.update_time) }}</el-descriptions-item>
@@ -89,7 +120,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getOrderDetailApi, cancelOrderApi, payOrderApi } from '@/api/order'
+import { getOrderDetailApi, cancelOrderApi, payOrderApi, getOrderTrackingApi } from '@/api/order'
 import { getLineDetailApi, getLinePortSequenceApi, getPortListApi } from '@/api/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute } from 'vue-router'
@@ -98,13 +129,16 @@ const route = useRoute()
 const loading = ref(false); const order = ref({})
 const routePorts = ref([])
 const loadingRoute = ref(false)
+const trackingStops = ref([])
+const trackingCurrent = ref(-1)
+const loadingTracking = ref(false)
 const tagType = s => ({ 0: 'info', 1: 'primary', 2: 'warning', 3: 'success', 4: 'danger' })[s] || 'info'
 const tagLabel = s => ({ 0: '待确认', 1: '已确认', 2: '运输中', 3: '已完成', 4: '已取消' })[s] || s
 
 function formatDate(d) { return d ? d.slice(0, 10) : '-' }
 function formatTime(t) { return t ? t.slice(0, 19).replace('T', ' ') : '-' }
 
-async function fetchDetail() { loading.value = true; try { const res = await getOrderDetailApi(route.params.id); order.value = res.data; await loadRoute() } catch { order.value = {} } finally { loading.value = false } }
+async function fetchDetail() { loading.value = true; try { const res = await getOrderDetailApi(route.params.id); order.value = res.data; await loadRoute(); await loadTracking() } catch { order.value = {} } finally { loading.value = false } }
 
 async function loadRoute() {
   const note = order.value.load_note
@@ -124,6 +158,7 @@ async function loadRoute() {
     })
   } catch {} finally { loadingRoute.value = false }
 }
+async function loadTracking() { if (!order.value.order_id) return; loadingTracking.value = true; try { const res = await getOrderTrackingApi(order.value.order_id); trackingStops.value = res.data?.stops || []; trackingCurrent.value = res.data?.current_stop_index ?? -1 } catch { /* ignore */ } finally { loadingTracking.value = false } }
 function handleCancel() { ElMessageBox.confirm('确认取消此订单？', '提示', { type: 'warning' }).then(async () => { await cancelOrderApi(order.value.order_id); ElMessage.success('已取消'); fetchDetail() }).catch(() => {}) }
 async function handlePay() { try { await payOrderApi(order.value.order_id); ElMessage.success('支付成功'); fetchDetail() } catch (e) { ElMessage.error(e.message || '支付失败') } }
 onMounted(fetchDetail)

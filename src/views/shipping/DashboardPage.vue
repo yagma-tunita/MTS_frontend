@@ -63,7 +63,7 @@ const stats = ref({ vesselCount: 0, lineCount: 0 })
 const tagType = s => ({ 0: 'info', 1: 'primary', 2: 'warning', 3: 'success', 4: 'danger' })[s] || 'info'
 const tagLabel = s => ({ 0: '待确认', 1: '已确认', 2: '运输中', 3: '已完成', 4: '已取消' })[s] || s
 const statCards = computed(() => [
-  { label: '船舶总数', value: stats.value.vesselCount, icon: Ship, color: '#1890ff' },
+  { label: '船舶总数', value: stats.value.vesselCount, icon: Ship, color: '#1a5276' },
   { label: '航线总数', value: stats.value.lineCount, icon: Connection, color: '#722ed1' },
   { label: '待处理', value: orders.value.filter(o => o.order_status === 0 || o.order_status === 1).length, icon: Clock, color: '#faad14' },
   { label: '运输中', value: orders.value.filter(o => o.order_status === 2).length, icon: Ship, color: '#52c41a' }

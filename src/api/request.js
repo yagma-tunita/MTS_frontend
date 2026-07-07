@@ -48,6 +48,8 @@ request.interceptors.response.use(
               originalRequest.headers.Authorization = `Bearer ${newToken}`
               return request(originalRequest)
             }
+            refreshSubscribers.forEach(cb => cb(null))
+            refreshSubscribers = []
           } catch {
             refreshSubscribers.forEach(cb => cb(null))
             refreshSubscribers = []

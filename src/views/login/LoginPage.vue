@@ -3,7 +3,7 @@
     <div class="login-left">
       <div class="login-left-content">
         <div class="login-logo">
-          <el-icon :size="28" color="#1890ff"><Ship /></el-icon>
+          <el-icon :size="28" color="#1a5276"><Ship /></el-icon>
           <span>MTS 航运物流管理系统</span>
         </div>
         <div class="login-left-body">
@@ -79,19 +79,19 @@ function goRegister(role) { router.push({ path: '/register', query: { role } }) 
 
 <style scoped>
 .login-page { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
-.login-left { width: 480px; background: #001529; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
+.login-left { width: 480px; background: linear-gradient(180deg, #0d2847, #071a30); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
 .login-left-content { display: flex; flex-direction: column; height: 100%; padding: 32px; }
 .login-logo { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; flex-shrink: 0; }
 .login-left-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .login-left-body h1 { font-size: 28px; font-weight: 700; line-height: 1.4; margin-bottom: 16px; }
 .login-left-body p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.6; }
 .login-left-footer { font-size: 12px; color: rgba(255,255,255,0.35); flex-shrink: 0; }
-.login-right { flex: 1; display: flex; align-items: center; justify-content: center; background: #f0f2f5; }
-.login-card { width: 400px; padding: 40px; background: #fff; border: 1px solid #e8e8e8; }
-.login-title { font-size: 22px; font-weight: 600; color: #262626; margin-bottom: 6px; }
-.login-desc { font-size: 13px; color: #8c8c8c; margin-bottom: 28px; }
+.login-right { flex: 1; display: flex; align-items: center; justify-content: center; background: #d4d9d9; }
+.login-card { width: 400px; padding: 40px; background: #f8f9fa; border: 1px solid #8a9ba8; border-radius: 4px; box-shadow: inset 0 1px 0 #fff, 0 2px 6px rgba(0,0,0,0.08); }
+.login-title { font-size: 22px; font-weight: 700; color: #0d2847; margin-bottom: 6px; }
+.login-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 28px; }
 .role-group { display: flex; width: 100%; }
 .role-group :deep(.el-radio-button__inner) { width: 120px; justify-content: center; }
 .login-btn { width: 100%; height: 40px; font-size: 14px; margin-top: 4px; }
-.login-register { text-align: center; font-size: 13px; color: #8c8c8c; margin-top: 16px; }
+.login-register { text-align: center; font-size: 13px; color: #8a9ba8; margin-top: 16px; }
 </style>

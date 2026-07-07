@@ -2,7 +2,7 @@
   <div class="layout">
     <div class="sidebar">
       <div class="sidebar-logo">
-        <el-icon :size="20" color="#1890ff"><Ship /></el-icon>
+        <el-icon :size="20" color="#1a5276"><Ship /></el-icon>
         <span class="sidebar-title">MTS 航运物流管理系统</span>
       </div>
       <el-menu :default-active="activeMenu" router background-color="#001529" text-color="rgba(255,255,255,0.65)" active-text-color="#fff">
@@ -55,7 +55,7 @@
         </div>
         <el-drawer v-model="notifyDrawer" title="通知消息" size="400px">
           <div v-loading="notifyLoading">
-            <div v-if="notifyList.length === 0" style="text-align: center; color: #999; padding: 40px 0">暂无通知</div>
+            <div v-if="notifyList.length === 0" style="text-align: center; color: #7a8a9a; padding: 40px 0">暂无通知</div>
             <div v-for="item in notifyList" :key="item.id" class="notify-item" :class="{ 'notify-unread': !item.read }" @click="handleMarkRead(item)">
               <div class="notify-title">{{ item.title }}</div>
               <div class="notify-content">{{ item.content }}</div>
@@ -130,28 +130,28 @@ function handleLogout() { ;['access_token','refresh_token','user_role','user_id'
 .sidebar-logo { height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
 .sidebar-title { font-size: 14px; color: #fff; font-weight: 600; white-space: nowrap; }
 .el-menu { flex: 1; overflow-y: auto; }
-.el-menu :deep(.el-menu-item.is-active) { background: #1890ff !important; }
+.el-menu :deep(.el-menu-item.is-active) { background: #1a5276 !important; }
 .el-menu :deep(.el-sub-menu .el-menu) { background: rgba(0,0,0,0.1) !important; }
 .sidebar-footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; flex-shrink: 0; }
 .sidebar-user { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.65); font-size: 13px; }
-.sidebar-user-icon { width: 28px; height: 28px; border-radius: 2px; background: #1890ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.sidebar-user-icon { width: 28px; height: 28px; border-radius: 2px; background: #1a5276; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
 .sidebar-user-info { display: flex; flex-direction: column; overflow: hidden; }
 .sidebar-user-name { font-size: 13px; color: rgba(255,255,255,0.85); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,0.45); }
 .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.header { height: 48px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
+.header { height: 48px; background: #eef0f1; border-bottom: 1px solid #8a9ba8; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
 .header-left { display: flex; align-items: center; }
 .header-right { display: flex; align-items: center; gap: 20px; }
-.header-time { font-size: 12px; color: #8c8c8c; }
-.header-user { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: #595959; }
-.header-user-icon { width: 22px; height: 22px; border-radius: 2px; background: #1890ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-.header-icon { cursor: pointer; color: #595959; vertical-align: middle; }
+.header-time { font-size: 12px; color: #7a8a9a; }
+.header-user { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: #3d4a5c; }
+.header-user-icon { width: 22px; height: 22px; border-radius: 2px; background: #1a5276; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.header-icon { cursor: pointer; color: #3d4a5c; vertical-align: middle; }
 .notify-badge { line-height: 1; }
 .notify-item { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
-.notify-item:hover { background: #f5f5f5; }
-.notify-unread { background: #e6f7ff; }
-.notify-title { font-size: 14px; font-weight: 600; color: #333; }
-.notify-content { font-size: 13px; color: #666; margin-top: 4px; }
-.notify-time { font-size: 12px; color: #999; margin-top: 4px; }
-.content { flex: 1; padding: 16px; overflow-y: auto; background: #f0f2f5; }
+.notify-item:hover { background: #eef1f3; }
+.notify-unread { background: #d4e4f0; }
+.notify-title { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+.notify-content { font-size: 13px; color: #5d6d7e; margin-top: 4px; }
+.notify-time { font-size: 12px; color: #7a8a9a; margin-top: 4px; }
+.content { flex: 1; padding: 16px; overflow-y: auto; background: #d4d9d9; }
 </style>

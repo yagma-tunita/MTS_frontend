@@ -40,7 +40,7 @@ import { User, Van, Monitor, MapLocation, Ship, Connection, Box, OfficeBuilding 
 
 const userName = ref(localStorage.getItem('user_name') || '管理员')
 const statCards = ref([
-  { label: '货主数量', value: 0, icon: User, color: '#1890ff' },
+  { label: '货主数量', value: 0, icon: User, color: '#1a5276' },
   { label: '海运公司数', value: 0, icon: Van, color: '#722ed1' },
   { label: '城市数量', value: 0, icon: OfficeBuilding, color: '#f5222d' },
   { label: '港口数量', value: 0, icon: MapLocation, color: '#52c41a' },
@@ -48,7 +48,7 @@ const statCards = ref([
   { label: '航线数量', value: 0, icon: Connection, color: '#13c2c2' }
 ])
 const navCards = [
-  { title: '货主管理', desc: '查看和管理货主公司', path: '/admin/shipper', icon: User, color: '#1890ff' },
+  { title: '货主管理', desc: '查看和管理货主公司', path: '/admin/shipper', icon: User, color: '#1a5276' },
   { title: '海运公司管理', desc: '查看和管理海运公司', path: '/admin/shipping', icon: Van, color: '#722ed1' },
   { title: '管理员管理', desc: '管理后台管理员账户', path: '/admin/admin/list', icon: Monitor, color: '#faad14' },
   { title: '港口管理', desc: '管理港口基础数据', path: '/admin/port', icon: MapLocation, color: '#52c41a' },
@@ -81,7 +81,7 @@ onMounted(loadStats)
 .stat-label { font-size: 13px; color: #8c8c8c; margin-top: 4px; }
 .stat-icon-wrap { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nav-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 12px; border: 1px solid #e8e8e8; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; }
-.nav-card:hover { border-color: #1890ff; }
+.nav-card:hover { border-color: #1a5276; }
 .nav-card-title { font-size: 14px; font-weight: 600; color: #262626; margin-top: 10px; }
 .nav-card-desc { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
 </style>

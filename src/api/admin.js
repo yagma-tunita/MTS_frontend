@@ -25,6 +25,8 @@ export function updateLineApi(id, data) { return request.put(`/admin/shipping-li
 export function deleteLineApi(id) { return request.delete(`/admin/shipping-lines/${id}`) }
 
 export function getCargoListApi(params) { return request.get('/admin/cargo/list', { params }) }
+export function createCargoApi(data) { return request.post('/admin/cargo/create', data) }
+export function deleteCargoApi(id) { return request.delete(`/admin/cargo/${id}`) }
 
 export function createCityApi(data) { return request.post('/admin/cities', data) }
 export function updateCityApi(id, data) { return request.put(`/admin/cities/${id}`, data) }
