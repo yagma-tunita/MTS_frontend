@@ -19,29 +19,25 @@
 
     <el-card>
       <template #header>最近订单</template>
-      <el-table :data="orders" v-loading="loading" stripe style="width: 100%">
+      <el-table :data="orders" v-loading="loading" stripe style="width:100%">
         <el-table-column prop="order_no" label="订单号" width="200" />
-        <el-table-column label="货主" min-width="130"><template #default="{ row }">{{ row.shipper_company?.company_name || '-' }}</template></el-table-column>
-        <el-table-column label="起运港"><template #default="{ row }">{{ row.departure_port?.port_name || '-' }}</template></el-table-column>
-        <el-table-column label="目的港"><template #default="{ row }">{{ row.destination_port?.port_name || '-' }}</template></el-table-column>
-        <el-table-column prop="total_weight_ton" label="重量(吨)" width="90" />
-        <el-table-column prop="order_status" label="状态" width="80">
-          <template #default="{ row }"><el-tag :type="tagType(row.order_status)" size="small">{{ tagLabel(row.order_status) }}</el-tag></template>
-        </el-table-column>
+        <el-table-column label="货主" width="140"><template #default="{ row }">{{ row.shipper_company?.company_name || '-' }}</template></el-table-column>
+        <el-table-column label="起运港" width="160"><template #default="{ row }">{{ row.departure_port?.port_name || '-' }}</template></el-table-column>
+        <el-table-column label="目的港" width="160"><template #default="{ row }">{{ row.destination_port?.port_name || '-' }}</template></el-table-column>
+        <el-table-column prop="total_weight_ton" label="重量(吨)" width="100" />
+        <el-table-column label="状态" width="90"><template #default="{ row }"><el-tag :type="tagType(row.order_status)" size="small">{{ tagLabel(row.order_status) }}</el-tag></template></el-table-column>
       </el-table>
     </el-card>
 
-    <el-card style="margin-top: 16px">
+    <el-card style="margin-top:16px">
       <template #header>最近航次</template>
-      <el-table :data="voyages" v-loading="voyageLoading" stripe style="width: 100%">
-        <el-table-column prop="voyage_name" label="航次名称" min-width="150" />
-        <el-table-column prop="line_name" label="航线" min-width="120" />
-        <el-table-column prop="vessel_name" label="船舶" min-width="120" />
-        <el-table-column prop="departure_time" label="离港时间" width="160" />
-        <el-table-column prop="arrival_time" label="到港时间" width="160" />
-        <el-table-column prop="status" label="状态" width="80">
-          <template #default="{ row }"><el-tag :type="voyageTagType(row.status)" size="small">{{ voyageTagLabel(row.status) }}</el-tag></template>
-        </el-table-column>
+      <el-table :data="voyages" v-loading="voyageLoading" stripe style="width:100%">
+        <el-table-column label="航次日期" width="120"><template #default="{ row }">{{ row.voyage_date ? String(row.voyage_date).slice(0,10) : '-' }}</template></el-table-column>
+        <el-table-column label="航线" width="200"><template #default="{ row }">{{ row.line?.line_name || row.line_id || '-' }}</template></el-table-column>
+        <el-table-column label="船舶" width="180"><template #default="{ row }">{{ row.vessel?.vessel_name || row.vessel_id || '-' }}</template></el-table-column>
+        <el-table-column label="港口" width="160"><template #default="{ row }">{{ row.port?.port_name || '-' }}</template></el-table-column>
+        <el-table-column label="计划到港" width="160"><template #default="{ row }">{{ formatTime(row.planned_arrival_time) }}</template></el-table-column>
+        <el-table-column label="计划离港" width="160"><template #default="{ row }">{{ formatTime(row.planned_departure_time) }}</template></el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -72,8 +68,7 @@ const statCards = computed(() => [
 async function loadStats() {
   try { const [v, l] = await Promise.all([getVesselListApi({ page: 1, page_size: 1 }), getLineListApi({ page: 1, page_size: 1 })]); stats.value.vesselCount = v.meta?.total || 0; stats.value.lineCount = l.meta?.total || 0 } catch {}
 }
-const voyageTagType = s => ({ 0: 'info', 1: 'primary', 2: 'warning', 3: 'success', 4: 'danger' })[s] || 'info'
-const voyageTagLabel = s => ({ 0: '计划', 1: '在航', 2: '已到港', 3: '已完成', 4: '已取消' })[s] || s
+const formatTime = t => t ? String(t).slice(0,19).replace('T',' ') : '-'
 async function loadOrders() { loading.value = true; try { const res = await getOrderListApi({ page: 1, page_size: 10 }); orders.value = res.data || [] } catch { orders.value = [] } finally { loading.value = false } }
 async function loadVoyages() { voyageLoading.value = true; try { const res = await getVoyageListApi({ page: 1, page_size: 10 }); voyages.value = res.data || [] } catch { voyages.value = [] } finally { voyageLoading.value = false } }
 onMounted(() => { loadStats(); loadOrders(); loadVoyages() })

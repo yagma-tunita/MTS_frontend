@@ -1,29 +1,38 @@
+/* ===== MTS 主题变量定义 ===== */
+/* 集中管理全局色彩、尺寸、字体等设计令牌，实现统一主题 */
+
 :root {
-  --primary: #1a5276;
-  --primary-hover: #2c6b8f;
-  --primary-active: #0d3d5c;
-  --primary-gradient: linear-gradient(180deg, #2c6b8f, #0d3d5c);
+  /* ---- 主色调 ---- */
+  --primary: #1a5276;            /* 主色：深蓝，用于按钮、链接、激活态 */
+  --primary-hover: #2c6b8f;      /* 主色悬浮态 */
+  --primary-active: #0d3d5c;     /* 主色点击态 */
+  --primary-gradient: linear-gradient(180deg, #2c6b8f, #0d3d5c); /* 主色渐变 */
 
-  --success: #148f77;
-  --warning: #b7950b;
-  --danger: #a04040;
-  --info: #5d6d7e;
+  /* ---- 语义色 ---- */
+  --success: #148f77;            /* 成功 */
+  --warning: #b7950b;            /* 警告 */
+  --danger: #a04040;             /* 危险/错误 */
+  --info: #5d6d7e;               /* 信息提示 */
 
-  --sidebar-bg: linear-gradient(180deg, #0d2847, #071a30);
-  --sidebar-hover: rgba(255,255,255,0.1);
-  --sidebar-active: #1a5276;
+  /* ---- 侧边栏 ---- */
+  --sidebar-bg: linear-gradient(180deg, #0d2847, #071a30); /* 侧边栏深蓝渐变背景 */
+  --sidebar-hover: rgba(255,255,255,0.1);                   /* 菜单项悬浮半透明白 */
+  --sidebar-active: #1a5276;                                /* 菜单项激活背景色 */
 
-  --header-height: 48px;
-  --main-bg: #d4d9d9;
-  --card-bg: #f0f2f2;
-  --border-color: #8a9ba8;
+  /* ---- 布局 & 容器 ---- */
+  --header-height: 48px;         /* 顶部导航栏高度 */
+  --main-bg: #d4d9d9;           /* 页面主背景色（灰蓝） */
+  --card-bg: #f0f2f2;           /* 卡片背景色 */
+  --border-color: #8a9ba8;      /* 通用边框色 */
 
-  --text-primary: #1a1a2e;
-  --text-secondary: #3d4a5c;
-  --text-muted: #7a8a9a;
+  /* ---- 文字色 ---- */
+  --text-primary: #1a1a2e;      /* 主要文字色（深黑） */
+  --text-secondary: #3d4a5c;    /* 次要文字色 */
+  --text-muted: #7a8a9a;        /* 弱化文字色 */
 
-  --font-family: 'Tahoma', 'Segoe UI', 'Arial', 'PingFang SC', sans-serif;
-  --font-size-base: 12px;
-  --font-size-sm: 11px;
-  --font-size-lg: 13px;
+  /* ---- 字体 ---- */
+  --font-family: 'Tahoma', 'Segoe UI', 'Arial', 'PingFang SC', sans-serif; /* 字体栈，优先 Tahoma */
+  --font-size-base: 13px;       /* 基础字号 */
+  --font-size-sm: 12px;         /* 小号字 */
+  --font-size-lg: 14px;         /* 大号字 */
 }

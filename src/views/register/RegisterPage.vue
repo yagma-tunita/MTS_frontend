@@ -1,4 +1,6 @@
-﻿<template>
+﻿<!-- ===== 注册页面 ===== -->
+<!-- 货主/海运公司二选一注册，填写企业信息、用户名密码、联系人信息，注册成功跳转登录页 -->
+<template>
   <div class="register-page">
     <div class="register-left">
       <div class="register-left-content">
@@ -35,16 +37,21 @@
 </template>
 
 <script setup>
+// ===== 注册页面逻辑 =====
 import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Ship } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { shipperRegisterApi, shippingRegisterApi } from '@/api/auth'
 
+// ---- 路由 & 角色判定 ----
 const router = useRouter(); const route = useRoute()
-const isShipper = computed(() => route.query.role === 'shipper')
+const isShipper = computed(() => route.query.role === 'shipper') // 是否货主注册（否则为海运公司）
+
+// ---- 表单状态 ----
 const formRef = ref(); const loading = ref(false)
 const form = reactive({ company_name: '', login_username: '', password: '', confirmPassword: '', unified_social_credit_code: '', contactPerson: '', contact_phone: '', address: '' })
+// ---- 表单校验规则 ----
 const rules = {
   company_name: [{ required: true, message: '请输入公司名称', trigger: 'blur' }],
   login_username: [{ required: true, message: '请输入登录用户名', trigger: 'blur' }],
@@ -52,6 +59,7 @@ const rules = {
   confirmPassword: [{ required: true, message: '请确认密码', trigger: 'blur' }, { validator: (_r, v, cb) => v !== form.password ? cb(new Error('两次密码不一致')) : cb(), trigger: 'blur' }]
 }
 
+// ---- 注册提交 ----
 async function handleRegister() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
@@ -67,10 +75,12 @@ async function handleRegister() {
   } catch (err) { ElMessage.error(err?.message || '注册失败') }
   finally { loading.value = false }
 }
+// ---- 跳转登录页 ----
 function goLogin() { router.push('/login') }
 </script>
 
 <style scoped>
+/* ===== 注册页样式 ===== */
 .register-page { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
 .register-left { width: 480px; background: #001529; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
 .register-left-content { display: flex; flex-direction: column; height: 100%; padding: 32px; }

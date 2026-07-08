@@ -33,7 +33,7 @@
       <el-table :data="orders" v-loading="loading" stripe style="width: 100%">
         <el-table-column prop="order_no" label="订单号" width="200" />
         <el-table-column label="起运港" min-width="130"><template #default="{ row }">{{ row.departure_port?.port_name || '-' }}</template></el-table-column>
-        <el-table-column label="目的港"><template #default="{ row }">{{ row.destination_port?.port_name || '-' }}</template></el-table-column>
+        <el-table-column label="目的港" width="150"><template #default="{ row }">{{ row.destination_port?.port_name || '-' }}</template></el-table-column>
         <el-table-column prop="total_weight_ton" label="重量(吨)" width="90" />
         <el-table-column label="总费用" width="110"><template #default="{ row }">¥{{ (row.total_cost || 0).toFixed(2) }}</template></el-table-column>
         <el-table-column prop="order_status" label="状态" width="80">

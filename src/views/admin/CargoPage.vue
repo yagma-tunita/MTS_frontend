@@ -18,8 +18,10 @@
         <el-table-column prop="volume_cubic_meter" label="体积(m3)" width="90" />
         <el-table-column label="关联订单" min-width="150"><template #default="{ row }">{{ row.order?.order_no || '-' }}</template></el-table-column>
         <el-table-column prop="create_time" label="创建时间" width="170" />
-        <el-table-column label="操作" width="80" fixed="right">
-          <template #default="{ row }"><el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button></template>
+        <el-table-column label="操作" min-width="120">
+          <template #default="{ row }">
+            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+          </template>
         </el-table-column>
       </el-table>
       <el-pagination v-if="meta.total" v-model:current-page="query.page" v-model:page-size="query.page_size" :total="meta.total" layout="total, sizes, prev, pager, next" @change="loadData" />

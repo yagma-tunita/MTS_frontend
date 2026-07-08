@@ -1,4 +1,6 @@
-﻿<template>
+﻿<!-- ===== 登录页面 ===== -->
+<!-- 提供角色选择（货主/海运公司/管理员）+ 用户名密码登录，登录成功跳转对应角色仪表盘 -->
+<template>
   <div class="login-page">
     <div class="login-left">
       <div class="login-left-content">
@@ -47,19 +49,22 @@
 </template>
 
 <script setup>
+// ===== 登录页面逻辑 =====
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock, Ship } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { loginApi } from '@/api/auth'
 
+// ---- 路由 & 表单状态 ----
 const router = useRouter()
-const formRef = ref()
-const loading = ref(false)
-const form = reactive({ role: 'shipper', username: '', password: '' })
+const formRef = ref()          // 表单引用，用于校验
+const loading = ref(false)     // 登录按钮加载状态
+const form = reactive({ role: 'shipper', username: '', password: '' })  // 登录表单数据
 const rules = { role: [{ required: true, message: '请选择角色', trigger: 'change' }], username: [{ required: true, message: '请输入用户名', trigger: 'blur' }], password: [{ required: true, message: '请输入密码', trigger: 'blur' }] }
-const roleDashboard = { shipper: '/shipper/dashboard', shipping: '/shipping/dashboard', admin: '/admin/dashboard' }
+const roleDashboard = { shipper: '/shipper/dashboard', shipping: '/shipping/dashboard', admin: '/admin/dashboard' }  // 角色 → 首页路由映射
 
+// ---- 登录处理 ----
 async function handleLogin() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
@@ -74,10 +79,12 @@ async function handleLogin() {
   } catch (err) { ElMessage.error(err?.message || '登录失败') }
   finally { loading.value = false }
 }
+// ---- 跳转注册页 ----
 function goRegister(role) { router.push({ path: '/register', query: { role } }) }
 </script>
 
 <style scoped>
+/* ===== 登录页样式 ===== */
 .login-page { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
 .login-left { width: 480px; background: linear-gradient(180deg, #0d2847, #071a30); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
 .login-left-content { display: flex; flex-direction: column; height: 100%; padding: 32px; }
@@ -91,7 +98,8 @@ function goRegister(role) { router.push({ path: '/register', query: { role } }) 
 .login-title { font-size: 22px; font-weight: 700; color: #0d2847; margin-bottom: 6px; }
 .login-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 28px; }
 .role-group { display: flex; width: 100%; }
-.role-group :deep(.el-radio-button__inner) { width: 120px; justify-content: center; }
-.login-btn { width: 100%; height: 40px; font-size: 14px; margin-top: 4px; }
+.role-group { width: 100%; }
+.role-group :deep(.el-radio-button__inner) { width: 130px; justify-content: center; font-size: 14px; padding: 4px 8px; }
+.login-btn { width: 100%; height: 42px; font-size: 15px; margin-top: 8px; letter-spacing: 4px; }
 .login-register { text-align: center; font-size: 13px; color: #8a9ba8; margin-top: 16px; }
 </style>

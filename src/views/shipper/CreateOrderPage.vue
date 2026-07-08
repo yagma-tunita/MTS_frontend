@@ -8,27 +8,27 @@
         <div v-show="activeStep === 0">
           <el-form ref="step1Ref" :model="formData" :rules="step1Rules" label-width="120px">
             <el-form-item label="出发城市" prop="departure_city_id">
-              <el-select v-model="formData.departure_city_id" placeholder="选择出发城市" @change="loadPorts('departure')" style="width: 300px">
+              <el-select v-model="formData.departure_city_id" placeholder="选择出发城市" @change="loadPorts('departure')" style="width:400px">
                 <el-option v-for="c in cities" :key="c.city_id" :label="c.city_name" :value="c.city_id" />
               </el-select>
             </el-form-item>
             <el-form-item label="起运港" prop="start_port_id">
-              <el-select v-model="formData.start_port_id" placeholder="选择起运港" style="width: 300px">
+              <el-select v-model="formData.start_port_id" placeholder="选择起运港" style="width:400px">
                  <el-option v-for="p in departurePorts" :key="p.port_id" :label="p.port_name + (p.city?.country ? ' (' + p.city.country + ')' : '')" :value="p.port_id" />
               </el-select>
             </el-form-item>
             <el-form-item label="目的城市" prop="destination_city_id">
-              <el-select v-model="formData.destination_city_id" placeholder="选择目的城市" @change="loadPorts('destination')" style="width: 300px">
+              <el-select v-model="formData.destination_city_id" placeholder="选择目的城市" @change="loadPorts('destination')" style="width:400px">
                 <el-option v-for="c in cities" :key="c.city_id" :label="c.city_name" :value="c.city_id" />
               </el-select>
             </el-form-item>
             <el-form-item label="目的港" prop="end_port_id">
-              <el-select v-model="formData.end_port_id" placeholder="选择目的港" style="width: 300px">
+              <el-select v-model="formData.end_port_id" placeholder="选择目的港" style="width:400px">
                  <el-option v-for="p in destinationPorts" :key="p.port_id" :label="p.port_name + (p.city?.country ? ' (' + p.city.country + ')' : '')" :value="p.port_id" />
               </el-select>
             </el-form-item>
             <el-form-item label="预估吨位(吨)" prop="required_ton">
-              <el-input-number v-model="formData.required_ton" :min="1" :step="10" />
+              <el-input-number v-model="formData.required_ton" :min="1" :step="10" style="width:200px" />
             </el-form-item>
           </el-form>
         </div>
@@ -47,13 +47,13 @@
         </div>
         <div v-show="activeStep === 2">
           <el-button type="primary" @click="addCargo" style="margin-bottom: 16px">添加货物</el-button>
-          <el-table :data="formData.cargos" stripe style="width: 100%">
-            <el-table-column label="货物名称" width="180"><template #default="{ row }"><el-input v-model="row.cargo_name" placeholder="货物名称" size="small" /></template></el-table-column>
-            <el-table-column label="类型" width="140"><template #default="{ row }"><el-select v-model="row.cargo_type" placeholder="类型" size="small" style="width: 100%"><el-option label="散货" value="bulk" /><el-option label="集装箱" value="container" /><el-option label="液体" value="liquid" /></el-select></template></el-table-column>
-            <el-table-column label="数量" width="100"><template #default="{ row }"><el-input-number v-model="row.quantity" :min="1" size="small" style="width: 80px" /></template></el-table-column>
-            <el-table-column label="重量(吨)" width="120"><template #default="{ row }"><el-input-number v-model="row.weight_ton" :min="0.1" :step="0.5" size="small" style="width: 100px" /></template></el-table-column>
-            <el-table-column label="体积(m3)" width="120"><template #default="{ row }"><el-input-number v-model="row.volume_cub_m" :min="0" :step="0.5" size="small" style="width: 100px" /></template></el-table-column>
-            <el-table-column label="操作" width="80"><template #default="{ $index }"><el-button type="danger" link size="small" @click="removeCargo($index)">删除</el-button></template></el-table-column>
+          <el-table :data="formData.cargos" stripe style="width:100%" :fit="false">
+            <el-table-column label="货物名称" width="220"><template #default="{ row }"><el-input v-model="row.cargo_name" placeholder="货物名称" /></template></el-table-column>
+            <el-table-column label="类型" width="150"><template #default="{ row }"><el-select v-model="row.cargo_type" placeholder="类型" style="width:100%"><el-option label="散货" value="bulk" /><el-option label="集装箱" value="container" /><el-option label="液体" value="liquid" /></el-select></template></el-table-column>
+            <el-table-column label="数量" width="130"><template #default="{ row }"><el-input-number v-model="row.quantity" :min="1" style="width:110px" /></template></el-table-column>
+            <el-table-column label="重量(吨)" width="150"><template #default="{ row }"><el-input-number v-model="row.weight_ton" :min="0.1" :step="0.5" style="width:130px" /></template></el-table-column>
+            <el-table-column label="体积(m³)" width="150"><template #default="{ row }"><el-input-number v-model="row.volume_cub_m" :min="0" :step="0.5" style="width:130px" /></template></el-table-column>
+            <el-table-column label="操作" width="80"><template #default="{ $index }"><el-button type="danger" link @click="removeCargo($index)">删除</el-button></template></el-table-column>
           </el-table>
         </div>
         <div v-show="activeStep === 3">

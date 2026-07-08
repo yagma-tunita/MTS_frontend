@@ -1,9 +1,14 @@
+// ===== MTS 前端路由配置 =====
+// 包含公共页面、货主/海运公司/管理员三大角色子路由及全局导航守卫（鉴权 + 角色拦截）
+
 import { createRouter, createWebHistory } from 'vue-router'
 
+// ---- 公共路由（无需登录） ----
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/login', name: 'Login', component: () => import('@/views/login/LoginPage.vue') },
   { path: '/register', name: 'Register', component: () => import('@/views/register/RegisterPage.vue') },
+  // ---- 货主端路由 ----
   {
     path: '/shipper', component: () => import('@/views/shipper/Layout.vue'),
     children: [
@@ -20,6 +25,7 @@ const routes = [
       { path: 'line/detail/:id', component: () => import('@/views/shipper/LineDetailPage.vue') },
     ]
   },
+  // ---- 海运公司端路由 ----
   {
     path: '/shipping', component: () => import('@/views/shipping/Layout.vue'),
     children: [
@@ -36,6 +42,7 @@ const routes = [
       { path: 'report', component: () => import('@/views/shipping/ReportPage.vue') },
     ]
   },
+  // ---- 管理员端路由 ----
   {
     path: '/admin', component: () => import('@/views/admin/Layout.vue'),
     children: [
@@ -52,17 +59,22 @@ const routes = [
       { path: 'notification', component: () => import('@/views/admin/NotificationPage.vue') },
     ]
   },
+  // ---- 404 未匹配路由 ----
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFoundPage.vue') }
 ]
 
+// ---- 创建路由实例 ----
 const router = createRouter({ history: createWebHistory(), routes })
 
+// ---- 角色路径映射，用于导航守卫中的重定向判断 ----
 const rolePathMap = { shipper: '/shipper', shipping: '/shipping', admin: '/admin' }
 
+// ---- 清除登录态（清除 localStorage 中的令牌和用户信息） ----
 function clearAuth() {
   ;['access_token','refresh_token','user_role','user_id','user_name'].forEach(k => localStorage.removeItem(k))
 }
 
+// ---- 全局导航守卫：鉴权 + 角色路由拦截 ----
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('access_token')
   const role = localStorage.getItem('user_role')

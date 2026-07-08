@@ -1,5 +1,9 @@
+/* ===== MTS 全局样式覆盖 ===== */
+/* 本文件覆盖 Element Plus 组件样式及定义全局公用样式类，营造企业级航运管理系统的视觉风格 */
+
 @import './variables.css';
 
+/* ===== 全局重置 & 基础样式 ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: var(--font-family);
@@ -52,32 +56,35 @@ body {
 }
 
 /* Table */
-.el-table { font-size: 12px; border: 1px solid #8a9ba8; border-radius: 2px; background: #f8f9fa !important; }
+.el-table { font-size: 13px; border: 1px solid #8a9ba8; border-radius: 2px; background: #f8f9fa !important; }
 .el-table th.el-table__cell {
   background: linear-gradient(180deg, #d8dee3, #c0cad4) !important;
   color: #1a1a2e !important;
-  font-weight: 700; padding: 5px 10px !important;
+  font-weight: 700; padding: 7px 12px !important;
   border-bottom: 1px solid #8a9ba8 !important;
   text-align: left;
+  white-space: nowrap;
 }
 .el-table th.el-table__cell:not(:last-child) {
   border-right: 1px solid #b0bcc8;
 }
 .el-table .el-table__cell {
-  padding: 5px 10px !important;
+  padding: 7px 12px !important;
   border-bottom: 1px solid #d0d8de !important;
   background: transparent !important;
   color: #1a1a2e;
   text-align: left;
 }
+.el-table .cell { white-space: nowrap; overflow: visible; }
+.el-table-column--selection .cell { padding-left: 8px; }
 .el-table--striped .el-table__body tr.el-table__row--striped td { background: #eef1f3 !important; }
 .el-table__body tr:hover > td { background: #d4e4f0 !important; }
 .el-table__body tr.current-row > td { background: #c0d8ec !important; }
 
 /* Button */
 .el-button {
-  border-radius: 3px; font-size: 12px; font-family: Tahoma, sans-serif;
-  padding: 3px 16px; height: 24px; line-height: 16px;
+  border-radius: 3px; font-size: 13px; font-family: Tahoma, sans-serif;
+  padding: 5px 18px; height: 28px; line-height: 16px;
   border: 1px solid #7a8a9a !important;
   background: linear-gradient(180deg, #f0f2f4, #d8dee3) !important;
   color: #1a1a2e !important;
@@ -95,23 +102,23 @@ body {
 .el-button--primary:active { background: linear-gradient(180deg, #1a5276, #0d3d5c) !important; }
 .el-button--danger { background: linear-gradient(180deg, #c07070, #a04040) !important; color: #fff !important; border-color: #803030 !important; box-shadow: inset 0 1px 0 #d08080 !important; }
 .el-button--success { background: linear-gradient(180deg, #30a88a, #148f77) !important; color: #fff !important; border-color: #0a7a60 !important; box-shadow: inset 0 1px 0 #50c8aa !important; }
-.el-button--small { font-size: 11px; padding: 2px 12px; height: 22px; line-height: 16px; }
+.el-button--small { font-size: 12px; padding: 3px 14px; height: 26px; line-height: 18px; }
 .el-button.is-link { border: none !important; background: none !important; box-shadow: none !important; color: #1a5276 !important; padding: 0 4px !important; height: auto !important; }
 .el-button.is-link:hover { color: #2c6b8f !important; text-decoration: underline; }
 
 /* Pagination */
-.el-pagination { margin-top: 12px; justify-content: flex-end; font-size: 12px; }
+.el-pagination { margin-top: 14px; justify-content: flex-end; font-size: 13px; }
 .el-pagination .el-pager li {
-  border-radius: 2px !important; margin: 0 1px;
+  border-radius: 2px !important; margin: 0 2px;
   background: linear-gradient(180deg, #f0f2f4, #d8dee3) !important;
   color: #1a1a2e !important;
   border: 1px solid #7a8a9a !important;
-  min-width: 22px !important; height: 22px !important; line-height: 20px !important;
-  font-size: 12px;
+  min-width: 26px !important; height: 26px !important; line-height: 24px !important;
+  font-size: 13px;
 }
 .el-pagination .el-pager li.active { background: linear-gradient(180deg, #3a7a9e, #1a5276) !important; border-color: #0d3d5c !important; color: #fff !important; }
 .el-pagination .el-pager li:hover { border-color: #3a7a9e !important; }
-.el-pagination button { background: linear-gradient(180deg, #f0f2f4, #d8dee3) !important; border: 1px solid #7a8a9a !important; height: 22px !important; margin: 0 1px; border-radius: 2px; }
+.el-pagination button { background: linear-gradient(180deg, #f0f2f4, #d8dee3) !important; border: 1px solid #7a8a9a !important; height: 26px !important; min-width: 26px !important; margin: 0 2px; border-radius: 2px; font-size: 13px; }
 .el-pagination button:hover { border-color: #3a7a9e !important; }
 .el-pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -134,12 +141,12 @@ body {
 .el-dialog__headerbtn { top: 6px; right: 10px; }
 .el-dialog__headerbtn .el-dialog__close { color: rgba(255,255,255,0.7) !important; font-size: 14px; font-weight: 700; }
 .el-dialog__headerbtn:hover .el-dialog__close { color: #fff !important; }
-.el-dialog__body { padding: 14px 16px !important; background: #eef0f1; }
-.el-dialog__footer { padding: 8px 16px 14px !important; background: #eef0f1; }
+.el-dialog__body { padding: 18px 20px !important; background: #eef0f1; }
+.el-dialog__footer { padding: 12px 20px 18px !important; background: #eef0f1; }
 
 /* Tag */
 .el-tag {
-  font-size: 11px; padding: 0 8px; height: 20px; line-height: 18px;
+  font-size: 12px; padding: 0 10px; height: 24px; line-height: 22px;
   border-radius: 2px; font-weight: 700;
   border: 1px solid currentColor !important;
   background: transparent !important;
@@ -149,30 +156,31 @@ body {
 .el-tag.el-tag--warning { color: #8a7a00 !important; }
 .el-tag.el-tag--primary { color: #1a5276 !important; }
 .el-tag.el-tag--info { color: #5d6d7e !important; }
+.el-tag--small { font-size: 11px; padding: 0 8px; height: 20px; line-height: 18px; }
 
 /* Form */
-.el-form-item { margin-bottom: 12px; }
-.el-form-item__label { font-size: 12px; color: #3d4a5c; font-weight: 600; padding-bottom: 0 !important; line-height: 24px; }
+.el-form-item { margin-bottom: 14px; }
+.el-form-item__label { font-size: 13px; color: #3d4a5c; font-weight: 600; padding-bottom: 0 !important; line-height: 28px; }
 .el-form-item.is-error .el-input__wrapper { border-color: #c75050 !important; }
-.el-form-item__error { color: #c75050 !important; font-size: 11px; padding-top: 2px; }
+.el-form-item__error { color: #c75050 !important; font-size: 12px; padding-top: 2px; }
 .el-input__wrapper {
   border-radius: 2px !important;
   border: 1px solid #8a9ba8 !important;
   background: #f8f9fa !important;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.06) !important;
-  height: 24px !important;
+  height: 28px !important;
 }
 .el-input__wrapper.is-focus { border-color: #1a5276 !important; }
-.el-input__inner { font-size: 12px; color: #1a1a2e; height: 22px !important; line-height: 22px !important; padding: 0 6px; }
+.el-input__inner { font-size: 13px; color: #1a1a2e; height: 26px !important; line-height: 26px !important; padding: 0 8px; }
 .el-input__inner::placeholder { color: #9aaab8; }
 .el-form-item--small { margin-bottom: 10px; }
 
 /* Select */
 .el-select-dropdown { border: 1px solid #8a9ba8 !important; border-radius: 2px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important; }
-.el-select-dropdown__item { font-size: 12px; color: #1a1a2e; padding: 2px 12px; height: 24px; line-height: 24px; }
+.el-select-dropdown__item { font-size: 13px; color: #1a1a2e; padding: 4px 14px; height: 28px; line-height: 28px; }
 .el-select-dropdown__item.hover { background: #d4e4f0 !important; }
 .el-select-dropdown__item.selected { color: #1a5276 !important; font-weight: 700; }
-.el-select .el-input__wrapper { height: 24px !important; }
+.el-select .el-input__wrapper { height: 28px !important; }
 
 /* Radio */
 .el-radio-button__inner {
@@ -187,17 +195,24 @@ body {
   border-color: #0d3d5c !important;
 }
 
+/* Card header */
+.el-card__header {
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+}
+
 /* Descriptions */
-.el-descriptions { font-size: 12px; }
-.el-descriptions__title { font-size: 13px; font-weight: 700; color: #0d2847; }
-.el-descriptions--border .el-descriptions__cell { padding: 6px 10px !important; border: 1px solid #d0d8de !important; }
-.el-descriptions__label { color: #5d6d7e; font-weight: 600; width: 120px; }
+.el-descriptions { font-size: 13px; }
+.el-descriptions__title { font-size: 14px; font-weight: 700; color: #0d2847; }
+.el-descriptions--border .el-descriptions__cell { padding: 8px 12px !important; border: 1px solid #d0d8de !important; }
+.el-descriptions__label { color: #5d6d7e; font-weight: 600; width: 130px; font-size: 13px; }
+.el-descriptions__content { font-size: 13px; }
 
 /* Steps */
-.el-step__title { font-size: 12px !important; color: #8a9ba8 !important; }
+.el-step__title { font-size: 13px !important; color: #8a9ba8 !important; }
 .el-step__title.is-process { color: #1a5276 !important; font-weight: 700; }
 .el-step__title.is-finish { color: #148f77 !important; }
-.el-step__head.is-process { background: #1a5276 !important; border-color: #1a5276 !important; width: 28px !important; height: 28px !important; }
+.el-step__head.is-process { background: #1a5276 !important; border-color: #1a5276 !important; width: 30px !important; height: 30px !important; }
 .el-step__head.is-finish { color: #148f77 !important; border-color: #148f77 !important; }
 .el-step__line { background: #c0cad4 !important; }
 .el-step__line.is-finish { background: #148f77 !important; }
@@ -268,9 +283,9 @@ body {
 .el-loading-spinner .el-loading-text { color: #5d6d7e !important; font-size: 12px; }
 
 /* Input Number */
-.el-input-number { height: 24px; line-height: 24px; }
-.el-input-number .el-input__wrapper { height: 24px !important; }
-.el-input-number__decrease, .el-input-number__increase { background: linear-gradient(180deg, #f0f2f4, #d8dee3) !important; border: none !important; border-left: 1px solid #8a9ba8 !important; width: 22px !important; height: 22px !important; line-height: 22px !important; }
+.el-input-number { height: 28px; line-height: 28px; }
+.el-input-number .el-input__wrapper { height: 28px !important; }
+.el-input-number__decrease, .el-input-number__increase { background: linear-gradient(180deg, #f0f2f4, #d8dee3) !important; border: none !important; border-left: 1px solid #8a9ba8 !important; width: 26px !important; height: 26px !important; line-height: 26px !important; font-size: 14px !important; }
 
 /* Date Picker */
 .el-picker-panel { border: 1px solid #8a9ba8 !important; border-radius: 2px !important; }
