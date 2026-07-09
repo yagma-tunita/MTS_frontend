@@ -5,7 +5,7 @@
         <div class="page-header"><span>订单详情 - {{ order.order_no }}</span>
           <div>
             <el-button v-if="order.order_status === 0 || order.order_status === 1" type="danger" @click="handleCancel">取消订单</el-button>
-            <el-button v-if="order.order_status === 1" type="success" @click="handlePay">去支付</el-button>
+            <el-button v-if="order.payment_status !== 1" type="success" @click="handlePay">去支付</el-button>
             <el-button type="primary" @click="$router.push(`/shipper/tracking?orderId=${order.order_id}`)">跟踪</el-button>
           </div>
         </div>
@@ -171,21 +171,28 @@ async function fetchDetail() {
   finally { loading.value = false }
 }
 async function loadRoute() {
-  const note = order.value.load_note
-  if (!note || !note.line_id) return
   loadingRoute.value = true
   try {
-    const [lineRes, seqRes, portRes] = await Promise.all([
-      getLineDetailApi(note.line_id),
-      getLinePortSequenceApi(note.line_id),
-      getPortListApi({ page: 1, page_size: 100 })
-    ])
-    const portIds = seqRes.data?.port_sequence || []
-    const ports = portRes.data || []
-    routePorts.value = portIds.map(id => {
-      const p = ports.find(x => x.port_id === id)
-      return p ? p.port_name : `港口#${id}`
-    })
+    // 优先通过 load_note 获取完整航线
+    const note = order.value.load_note
+    if (note && note.line_id) {
+      const [lineRes, seqRes, portRes] = await Promise.all([
+        getLineDetailApi(note.line_id),
+        getLinePortSequenceApi(note.line_id),
+        getPortListApi({ page: 1, page_size: 100 })
+      ])
+      const portIds = seqRes.data?.port_sequence || []
+      const ports = portRes.data || []
+      routePorts.value = portIds.map(id => {
+        const p = ports.find(x => x.port_id === id)
+        return p ? p.port_name : `港口#${id}`
+      })
+    } else if (order.value.departure_port || order.value.destination_port) {
+      // 没有 load_note 时直接显示起止港
+      const dep = order.value.departure_port?.port_name || '起运港'
+      const dest = order.value.destination_port?.port_name || '目的港'
+      routePorts.value = [dep, dest]
+    }
   } catch {} finally { loadingRoute.value = false }
 }
 async function loadTracking() {

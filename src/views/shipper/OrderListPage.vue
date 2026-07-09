@@ -22,9 +22,10 @@
           <template #default="{ row }"><el-tag :type="tagType(row.order_status)" effect="dark" size="small">{{ tagLabel(row.order_status) }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="create_time" label="创建时间" width="180" />
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="viewDetail(row)">详情</el-button>
+            <el-button v-if="row.payment_status !== 1" size="small" type="success" @click="handlePay(row)">支付</el-button>
             <el-button v-if="row.order_status === 0 || row.order_status === 1" size="small" type="danger" @click="handleCancel(row)">取消</el-button>
           </template>
         </el-table-column>
@@ -127,7 +128,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { getOrderListApi, cancelOrderApi, getOrderTrackingApi } from '@/api/order'
+import { getOrderListApi, cancelOrderApi, payOrderApi } from '@/api/order'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const loading = ref(false)
@@ -169,6 +170,9 @@ function handleSearch() { query.page = 1; loadOrders() }
 function handleReset() { searchForm.order_no = ''; searchForm.order_status = ''; query.page = 1; loadOrders() }
 async function handleCancel(row) {
   try { await ElMessageBox.confirm('确认取消该订单？', '提示'); await cancelOrderApi(row.order_id); ElMessage.success('已取消'); await loadOrders() } catch { /* ignore */ }
+}
+async function handlePay(row) {
+  try { await ElMessageBox.confirm('确认支付该订单？', '支付确认'); await payOrderApi(row.order_id); ElMessage.success('支付成功'); await loadOrders() } catch { /* ignore */ }
 }
 async function viewDetail(row) { current.value = row; detailVisible.value = true; try { const res = await getOrderTrackingApi(row.order_id); trackingTrack.value = res.data; trackingStops.value = res.data?.stops || []; trackingCurrent.value = res.data?.current_stop_index ?? -1 } catch { trackingStops.value = []; trackingCurrent.value = -1 } }
 onMounted(loadOrders)
