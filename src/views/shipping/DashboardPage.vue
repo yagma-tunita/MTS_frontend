@@ -32,12 +32,11 @@
     <el-card style="margin-top:16px">
       <template #header>最近航次</template>
       <el-table :data="voyages" v-loading="voyageLoading" stripe style="width:100%">
-        <el-table-column label="航次日期" width="120"><template #default="{ row }">{{ row.voyage_date ? String(row.voyage_date).slice(0,10) : '-' }}</template></el-table-column>
-        <el-table-column label="航线" width="200"><template #default="{ row }">{{ row.line?.line_name || row.line_id || '-' }}</template></el-table-column>
-        <el-table-column label="船舶" width="180"><template #default="{ row }">{{ row.vessel?.vessel_name || row.vessel_id || '-' }}</template></el-table-column>
-        <el-table-column label="港口" width="160"><template #default="{ row }">{{ row.port?.port_name || '-' }}</template></el-table-column>
-        <el-table-column label="计划到港" width="160"><template #default="{ row }">{{ formatTime(row.planned_arrival_time) }}</template></el-table-column>
-        <el-table-column label="计划离港" width="160"><template #default="{ row }">{{ formatTime(row.planned_departure_time) }}</template></el-table-column>
+        <el-table-column label="启航日期" width="110"><template #default="{ row }">{{ row.voyage_date || '-' }}</template></el-table-column>
+        <el-table-column label="航线" min-width="180"><template #default="{ row }">{{ row.line_name || '-' }}</template></el-table-column>
+        <el-table-column label="船舶" min-width="160"><template #default="{ row }">{{ row.vessel_name || '-' }}</template></el-table-column>
+        <el-table-column label="停靠港数" width="90" prop="port_count" />
+        <el-table-column label="途经" min-width="200"><template #default="{ row }">{{ formatRoute(row._stops || []) }}</template></el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -70,7 +69,11 @@ async function loadStats() {
 }
 const formatTime = t => t ? String(t).slice(0,19).replace('T',' ') : '-'
 async function loadOrders() { loading.value = true; try { const res = await getOrderListApi({ page: 1, page_size: 10 }); orders.value = res.data || [] } catch { orders.value = [] } finally { loading.value = false } }
-async function loadVoyages() { voyageLoading.value = true; try { const res = await getVoyageGroupsApi({ page: 1, page_size: 10 }); voyages.value = (res.data || []).map(v => ({ ...v, voyage_date: v.voyage_date, line: { line_name: v.line_name }, vessel: { vessel_name: v.vessel_name } })) } catch { voyages.value = [] } finally { voyageLoading.value = false } }
+function formatRoute(stops) {
+  if (!stops || stops.length === 0) return '-'
+  return stops.map(s => s.port_name).join(' → ')
+}
+async function loadVoyages() { voyageLoading.value = true; try { const res = await getVoyageGroupsApi({ page: 1, page_size: 10 }); voyages.value = (res.data || []).map(v => ({ ...v, _stops: v.port_stops || [] })) } catch { voyages.value = [] } finally { voyageLoading.value = false } }
 onMounted(() => { loadStats(); loadOrders(); loadVoyages() })
 </script>
 

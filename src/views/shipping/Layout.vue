@@ -9,6 +9,7 @@
         <el-menu-item index="/shipping/dashboard"><el-icon><Odometer /></el-icon><span>工作台</span></el-menu-item>
         <el-menu-item index="/shipping/order/list"><el-icon><List /></el-icon><span>订单管理</span></el-menu-item>
         <el-menu-item index="/shipping/voyage/create"><el-icon><MapLocation /></el-icon><span>航线申请</span></el-menu-item>
+        <el-menu-item index="/shipping/voyage/create-voyage"><el-icon><Ship /></el-icon><span>创建航次</span></el-menu-item>
         <el-menu-item index="/shipping/voyage/manage"><el-icon><Timer /></el-icon><span>航次管理</span></el-menu-item>
         <el-sub-menu index="basic">
           <template #title><el-icon><DataBoard /></el-icon><span>基础数据</span></template>
@@ -96,7 +97,7 @@ async function refreshUser() { try { const res = await getCurrentUserApi(); if (
 onMounted(() => { const p = n => String(n).padStart(2, '0'); timer = setInterval(() => { const d = new Date(); currentTime.value = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}` }, 1000); loadNotifications(); refreshUser(); const token = localStorage.getItem('access_token'); if (token) { try { const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`; ws = new WebSocket(`${wsUrl}?token=${token}`); ws.onmessage = (event) => { try { const data = JSON.parse(event.data); if (data.type === 'order_status_update') { ElNotification({ title: '订单状态更新', message: `订单 #${data.order_id} 状态已变更`, type: 'success' }) } } catch {} }; ws.onerror = () => {} } catch {} } })
 onUnmounted(() => { clearInterval(timer); if (ws) ws.close() })
 const pageTitle = computed(() => {
-  const map = { '/shipping/dashboard': '工作台', '/shipping/order/list': '订单管理', '/shipping/voyage/create': '航线申请', '/shipping/voyage/manage': '航次管理', '/shipping/report': '统计报表', '/shipping/port/list': '港口信息', '/shipping/port/detail': '港口详情', '/shipping/vessel/list': '船舶信息', '/shipping/vessel/detail': '船舶详情', '/shipping/line/list': '航线信息', '/shipping/line/detail': '航线详情' }
+  const map = { '/shipping/dashboard': '工作台', '/shipping/order/list': '订单管理', '/shipping/voyage/create': '航线申请', '/shipping/voyage/create-voyage': '创建航次', '/shipping/voyage/manage': '航次管理', '/shipping/report': '统计报表', '/shipping/port/list': '港口信息', '/shipping/port/detail': '港口详情', '/shipping/vessel/list': '船舶信息', '/shipping/vessel/detail': '船舶详情', '/shipping/line/list': '航线信息', '/shipping/line/detail': '航线详情' }
   for (const [k, v] of Object.entries(map)) { if (route.path.startsWith(k)) return v }; return ''
 })
 const activeMenu = computed(() => {
@@ -105,6 +106,7 @@ const activeMenu = computed(() => {
   if (path.startsWith('/shipping/port/')) return '/shipping/port/list'
   if (path.startsWith('/shipping/vessel/')) return '/shipping/vessel/list'
   if (path.startsWith('/shipping/line/')) return '/shipping/line/list'
+  if (path.startsWith('/shipping/voyage/create-voyage')) return '/shipping/voyage/create-voyage'
   if (path.startsWith('/shipping/voyage/create')) return '/shipping/voyage/create'
   if (path.startsWith('/shipping/voyage/manage')) return '/shipping/voyage/manage'
   if (path.startsWith('/shipping/report')) return '/shipping/report'

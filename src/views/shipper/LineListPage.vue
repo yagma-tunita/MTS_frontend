@@ -5,7 +5,9 @@
       <el-table-column prop="line_name" label="航线名称" min-width="180" />
       <el-table-column prop="departure_port_name" label="起始港" width="120" />
       <el-table-column prop="destination_port_name" label="目的港" width="120" />
-      <el-table-column prop="total_distance_nm" label="总距离(海里)" width="130" />
+      <el-table-column prop="total_distance_nm" label="总距离(海里)" width="110" />
+      <el-table-column label="海运公司" min-width="140"><template #default="{ row }">{{ row.shipping_company?.company_name || '-' }}</template></el-table-column>
+      <el-table-column label="状态" width="80"><template #default="{ row }"><el-tag :type="row.line_status===1?'success':'info'" size="small">{{ row.line_status===1?'已启用':'-' }}</el-tag></template></el-table-column>
       <el-table-column label="操作" width="100"><template #default="{ row }"><el-button size="small" @click="$router.push(`/shipper/line/detail/${row.line_id}`)">详情</el-button></template></el-table-column>
     </el-table>
     <el-pagination v-if="meta.total" v-model:current-page="query.page" v-model:page-size="query.page_size" :total="meta.total" layout="total, sizes, prev, pager, next" @change="loadData" />
@@ -15,7 +17,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { getLineListApi } from '@/api/data'
 import { ElMessage } from 'element-plus'
-const loading = ref(false); const list = ref([]); const meta = ref({}); const query = reactive({ page: 1, page_size: 10 })
+const loading = ref(false); const list = ref([]); const meta = ref({}); const query = reactive({ page: 1, page_size: 100 })
 async function loadData() { loading.value = true; try { const res = await getLineListApi(query); list.value = res.data || []; meta.value = res.meta || {} } catch (e) { ElMessage.error(e.message || '加载失败') } finally { loading.value = false } }
 onMounted(loadData)
 </script>

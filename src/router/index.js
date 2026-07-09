@@ -38,6 +38,7 @@ const routes = [
       { path: 'line/list', component: () => import('@/views/shipping/LineListPage.vue') },
       { path: 'line/detail/:id', component: () => import('@/views/shipping/LineDetailPage.vue') },
       { path: 'voyage/create', component: () => import('@/views/shipping/CreateVoyagePage.vue') },
+      { path: 'voyage/create-voyage', component: () => import('@/views/shipping/CreateVoyagePage.vue') },
       { path: 'voyage/manage', component: () => import('@/views/shipping/VoyageManagePage.vue') },
       { path: 'report', component: () => import('@/views/shipping/ReportPage.vue') },
     ]

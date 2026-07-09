@@ -53,7 +53,7 @@
         <el-button type="primary" @click="addCargoOp('status')" style="margin-bottom:8px;">添加货物操作</el-button>
         <el-table :data="statusForm.cargo_operations" stripe style="width:100%" :fit="false">
           <el-table-column label="货物名称" width="200"><template #default="{ row }"><el-input v-model="row.cargo_name" /></template></el-table-column>
-          <el-table-column label="类型" width="140"><template #default="{ row }"><el-select v-model="row.cargo_type" style="width:100%"><el-option label="散货" value="bulk" /><el-option label="集装箱" value="container" /><el-option label="液体" value="liquid" /></el-select></template></el-table-column>
+          <el-table-column label="类型" width="140"><template #default="{ row }"><el-select v-model="row.cargo_type" style="width:100%"><el-option v-for="ct in cargoTypes" :key="ct.type_code" :label="ct.type_name" :value="ct.type_code" /></el-select></template></el-table-column>
           <el-table-column label="重量(吨)" width="140"><template #default="{ row }"><el-input-number v-model="row.weight_ton" :min="0" :precision="1" style="width:120px" /></template></el-table-column>
           <el-table-column label="装卸" width="120"><template #default="{ row }"><el-select v-model="row.operation" style="width:100%"><el-option label="装货" value="LOAD" /><el-option label="卸货" value="UNLOAD" /></el-select></template></el-table-column>
           <el-table-column label="" width="50"><template #default="{ $index }"><el-button link type="danger" @click="statusForm.cargo_operations.splice($index,1)">×</el-button></template></el-table-column>
@@ -84,7 +84,7 @@
       <el-button type="primary" @click="addCargoOp('port')" style="margin-bottom:8px;">添加货物操作</el-button>
       <el-table :data="portForm.cargo_operations" stripe style="width:100%" :fit="false">
         <el-table-column label="货物名称" width="200"><template #default="{ row }"><el-input v-model="row.cargo_name" /></template></el-table-column>
-        <el-table-column label="类型" width="140"><template #default="{ row }"><el-select v-model="row.cargo_type" style="width:100%"><el-option label="散货" value="bulk" /><el-option label="集装箱" value="container" /><el-option label="液体" value="liquid" /></el-select></template></el-table-column>
+        <el-table-column label="类型" width="140"><template #default="{ row }"><el-select v-model="row.cargo_type" style="width:100%"><el-option v-for="ct in cargoTypes" :key="ct.type_code" :label="ct.type_name" :value="ct.type_code" /></el-select></template></el-table-column>
         <el-table-column label="重量(吨)" width="140"><template #default="{ row }"><el-input-number v-model="row.weight_ton" :min="0" :precision="1" style="width:120px" /></template></el-table-column>
         <el-table-column label="装卸" width="120"><template #default="{ row }"><el-select v-model="row.operation" style="width:100%"><el-option label="装货" value="LOAD" /><el-option label="卸货" value="UNLOAD" /></el-select></template></el-table-column>
         <el-table-column label="" width="50"><template #default="{ $index }"><el-button link type="danger" @click="portForm.cargo_operations.splice($index,1)">×</el-button></template></el-table-column>
@@ -185,6 +185,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { getOrderListApi, cancelOrderApi, getOrderTrackingApi } from '@/api/order'
+import { getCargoTypeListApi } from '@/api/data'
 import request from '@/api/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -192,6 +193,7 @@ const loading = ref(false)
 const orders = ref([])
 const meta = ref({})
 const query = reactive({ page: 1, page_size: 10 })
+const cargoTypes = ref([])
 const searchForm = reactive({ order_no: '', order_status: '' })
 const tagType = s => ({ 0:'info',1:'primary',2:'warning',3:'success',4:'danger' })[s]||'info'
 const tagLabel = s => ({ 0:'待确认',1:'已确认',2:'运输中',3:'已完成',4:'已取消' })[s]||s
@@ -230,8 +232,11 @@ const statusDialogTitle = computed(() => {
 function labelText(s) {
   return tagLabel(s)
 }
+function defaultCargoType() {
+  return cargoTypes.value.length > 0 ? cargoTypes.value[0].type_code : 'bulk'
+}
 function addCargoOp(type) {
-  const op = { cargo_name:'', cargo_type:'bulk', weight_ton:0, operation:'LOAD' }
+  const op = { cargo_name:'', cargo_type: defaultCargoType(), weight_ton:0, operation:'LOAD' }
   if (type === 'status') statusForm.cargo_operations.push({...op})
   else portForm.cargo_operations.push({...op})
 }
@@ -334,7 +339,7 @@ async function viewDetail(row) {
   } catch { detailStops.value = [] }
 }
 
-onMounted(loadOrders)
+onMounted(async () => { loadOrders(); try { const res = await getCargoTypeListApi(); cargoTypes.value = res.data || [] } catch { /* ignore */ } })
 </script>
 
 <style scoped>

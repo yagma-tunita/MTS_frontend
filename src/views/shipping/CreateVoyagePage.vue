@@ -34,9 +34,20 @@
                 </el-select>
               </div>
             </el-form-item>
-            <el-form-item label="总航程(海里)">
-              <el-input-number v-model="lineForm.total_distance_nm" :min="0" :precision="2" :step="100" style="width:200px" />
-            </el-form-item>
+            <el-row :gutter="16">
+              <el-col :span="12">
+                <el-form-item label="总航程(海里)">
+                  <el-input-number v-model="lineForm.total_distance_nm" :min="0" :precision="2" :step="100" style="width:100%" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="分配船舶" prop="vessel_ids">
+                  <el-select v-model="lineForm.vessel_ids" multiple filterable placeholder="至少选择一艘船舶" style="width:100%">
+                    <el-option v-for="v in vessels" :key="v.vessel_id" :label="`${v.vessel_name}（${v.speed_knot||'-'}节/${v.max_deadweight_ton||'-'}吨）`" :value="v.vessel_id" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
             <el-form-item label="描述">
               <el-input v-model="lineForm.description" type="textarea" :rows="2" placeholder="航线描述（选填）" style="width:400px" />
             </el-form-item>
@@ -144,11 +155,13 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { getLineListApi, getPortListApi, getVesselListApi, getLinePortSequenceApi, getLineAssignedVesselsApi } from '@/api/data'
 import { createVoyageApi, createShippingLineApi } from '@/api/voyage'
 import { ElMessage } from 'element-plus'
 
-const activeTab = ref('line')
+const route = useRoute()
+const activeTab = ref(route.path.includes('create-voyage') ? 'voyage' : 'line')
 const ports = ref([])
 const vessels = ref([])
 const allLines = ref([])
@@ -163,6 +176,7 @@ const lineForm = reactive({
   destination_port_id: null,
   port_sequence: [],
   total_distance_nm: 0,
+  vessel_ids: [],
   description: ''
 })
 
@@ -179,7 +193,7 @@ const activeLines = computed(() =>
   allLines.value.filter(l => l.line_status === 1)
 )
 
-    const selectedLine = computed(() =>
+const selectedLine = computed(() =>
   activeLines.value.find(l => l.line_id === voyageForm.line_id)
 )
 
@@ -223,6 +237,7 @@ async function submitLine() {
   if (!lineForm.departure_port_id) { ElMessage.warning('请选择起始港'); return }
   if (!lineForm.destination_port_id) { ElMessage.warning('请选择目的港'); return }
   if (lineForm.port_sequence.length < 2) { ElMessage.warning('请至少选择起始港和目的港'); return }
+  if (lineForm.vessel_ids.length === 0) { ElMessage.warning('请至少分配一艘船舶'); return }
 
   const depPort = ports.value.find(p => p.port_id === lineForm.departure_port_id)
   const destPort = ports.value.find(p => p.port_id === lineForm.destination_port_id)
@@ -235,6 +250,7 @@ async function submitLine() {
       destination_port_name: destPort?.port_name || '',
       port_sequence: JSON.stringify(lineForm.port_sequence),
       total_distance_nm: lineForm.total_distance_nm,
+      vessel_ids: lineForm.vessel_ids,
       description: lineForm.description || undefined
     })
     ElMessage.success('航线申请已提交，等待管理员审核')
@@ -252,6 +268,7 @@ function resetLineForm() {
   lineForm.destination_port_id = null
   lineForm.port_sequence = []
   lineForm.total_distance_nm = 0
+  lineForm.vessel_ids = []
   lineForm.description = ''
 }
 
@@ -272,8 +289,9 @@ async function onLineChange() {
       departure_time: null
     }))
     lineAssignedVesselIds.value = vesRes.data?.vessel_ids || []
-  } catch {
+  } catch (e) {
     portStops.value = []
+    console.error('加载航线信息失败', e)
   }
 }
 

@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { createLineApi, updateLineApi, deleteLineApi, getPendingLinesApi, approveLineApi, deprecateLineApi } from '@/api/admin'
 import { getLineListApi, getShippingCompanyListApi, getVesselListApi, getLineAssignedVesselsApi, assignLineVesselApi, unassignLineVesselApi } from '@/api/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -167,5 +167,6 @@ async function handleReject(row) { try { await ElMessageBox.confirm(`确认拒�
 async function loadSearchOptions() { try { const res=await getLineListApi({page:1,page_size:200}); searchOptions.value=(res.data||[]).map(l=>({value:l.line_name})) } catch{} }
 function searchSuggestions(queryString,cb) { const r=queryString?searchOptions.value.filter(s=>s.value.includes(queryString)):searchOptions.value; cb(r) }
 function onSearchSelect(item) { query.keyword=item.value; handleSearch() }
+watch(activeTab, (val) => { if (val === 'pending') { pendingQuery.page = 1; loadPending() } })
 onMounted(async()=>{ await loadData(); try { const res=await getShippingCompanyListApi({page:1,page_size:100}); companies.value=res.data||[] } catch{/*ignore*/}; loadSearchOptions() })
 </script>
