@@ -47,7 +47,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getOrderListApi } from '@/api/order'
 import { getVesselListApi, getLineListApi } from '@/api/data'
-import { getVoyageListApi } from '@/api/voyage'
+import { getVoyageGroupsApi } from '@/api/voyage'
 import { List, Ship, Connection, Clock } from '@element-plus/icons-vue'
 
 const loading = ref(false)
@@ -70,7 +70,7 @@ async function loadStats() {
 }
 const formatTime = t => t ? String(t).slice(0,19).replace('T',' ') : '-'
 async function loadOrders() { loading.value = true; try { const res = await getOrderListApi({ page: 1, page_size: 10 }); orders.value = res.data || [] } catch { orders.value = [] } finally { loading.value = false } }
-async function loadVoyages() { voyageLoading.value = true; try { const res = await getVoyageListApi({ page: 1, page_size: 10 }); voyages.value = res.data || [] } catch { voyages.value = [] } finally { voyageLoading.value = false } }
+async function loadVoyages() { voyageLoading.value = true; try { const res = await getVoyageGroupsApi({ page: 1, page_size: 10 }); voyages.value = (res.data || []).map(v => ({ ...v, voyage_date: v.voyage_date, line: { line_name: v.line_name }, vessel: { vessel_name: v.vessel_name } })) } catch { voyages.value = [] } finally { voyageLoading.value = false } }
 onMounted(() => { loadStats(); loadOrders(); loadVoyages() })
 </script>
 

@@ -9,9 +9,10 @@
             <el-table-column prop="departure_port_name" label="起运港" width="120" /><el-table-column prop="destination_port_name" label="目的港" width="120" />
             <el-table-column prop="total_distance_nm" label="总距离(海里)" width="130" />
             <el-table-column label="状态" width="90"><template #default="{row}"><el-tag :type="row.line_status===1?'success':(row.line_status===0?'warning':'info')" size="small">{{ {0:'待审核',1:'已启用',2:'已弃用'}[row.line_status]||'-' }}</el-tag></template></el-table-column>
-            <el-table-column label="操作" min-width="250">
+            <el-table-column label="操作" min-width="320">
               <template #default="{ row }">
                 <el-button size="small" @click="openEdit(row)">编辑</el-button>
+                <el-button size="small" @click="openVesselAssign(row)">分配船舶</el-button>
                 <el-button v-if="row.line_status===1" size="small" type="danger" @click="handleDeprecate(row)">弃用</el-button>
                 <el-button v-if="row.line_status===2" size="small" type="success" @click="handleRestore(row)">恢复</el-button>
                 <el-button size="small" type="danger" @click="handleDelete(row)">永久删除</el-button>
@@ -53,18 +54,41 @@
           <el-col :span="12"><el-form-item label="目的港名称" prop="destination_port_name"><el-input v-model="form.destination_port_name" /></el-form-item></el-col>
         </el-row>
         <el-form-item label="港口顺序(JSON)" prop="port_sequence"><el-input v-model="form.port_sequence" placeholder="港口ID数组，如 [1,2,3]" /></el-form-item>
-        <el-row :gutter="16"><el-col :span="12"><el-form-item label="总距离(海里)" prop="total_distance_nm"><el-input-number v-model="form.total_distance_nm" :min="0" :precision="1" style="width:100%" /></el-form-item></el-col></el-row>
-        <el-form-item label="描述" prop="description"><el-input v-model="form.description" type="textarea" :rows="2" /></el-form-item>
+          <el-row :gutter="16"><el-col :span="12"><el-form-item label="总距离(海里)" prop="total_distance_nm"><el-input-number v-model="form.total_distance_nm" :min="0" :precision="1" style="width:100%" /></el-form-item></el-col></el-row>
+          <el-form-item label="描述" prop="description"><el-input v-model="form.description" type="textarea" :rows="2" /></el-form-item>
       </el-form>
       <template #footer><el-button @click="dialogVisible = false">取消</el-button><el-button type="primary" :loading="saving" @click="handleSave">{{ isEdit ? '保存' : '添加' }}</el-button></template>
+    </el-dialog>
+
+    <el-dialog v-model="vesDialogVisible" title="分配船舶到航线" width="600px">
+      <div v-loading="vesLoading">
+        <div style="margin-bottom:12px">
+          <span style="font-weight:600">当前航线：</span>{{ currentLineName }}
+        </div>
+        <el-select v-model="addVesselId" filterable placeholder="添加船舶" style="width:300px" @change="handleAssignVessel">
+          <el-option v-for="v in availableVessels" :key="v.vessel_id" :label="`${v.vessel_name}（${v.speed_knot||'-'}节）`" :value="v.vessel_id" />
+        </el-select>
+        <el-table :data="assignedVessels" stripe size="small" style="margin-top:12px">
+          <el-table-column prop="vessel_name" label="船舶名称" min-width="180" />
+          <el-table-column prop="imo_number" label="IMO编号" width="140" />
+          <el-table-column label="航速" width="80"><template #default="{row}">{{ row.speed_knot || '-' }} 节</template></el-table-column>
+          <el-table-column label="操作" width="80">
+            <template #default="{row}">
+              <el-button size="small" type="danger" @click="handleUnassignVessel(row)">移除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-empty v-if="!vesLoading && assignedVessels.length === 0" description="暂未分配船舶" />
+      </div>
+      <template #footer><el-button @click="vesDialogVisible=false">关闭</el-button></template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { createLineApi, updateLineApi, deleteLineApi, getPendingLinesApi, approveLineApi, deprecateLineApi } from '@/api/admin'
-import { getLineListApi, getShippingCompanyListApi } from '@/api/data'
+import { getLineListApi, getShippingCompanyListApi, getVesselListApi, getLineAssignedVesselsApi, assignLineVesselApi, unassignLineVesselApi } from '@/api/data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 
@@ -82,6 +106,55 @@ function handleExportLines() { const token = localStorage.getItem('access_token'
 function handleImportClick() { fileInputLine.value.click() }
 async function handleImportLines(e) { const file = e.target.files[0]; if (!file) return; const fd = new FormData(); fd.append('file',file); const token = localStorage.getItem('access_token'); try { await axios.post('/api/v1/import/shipping-lines',fd,{headers:{'Authorization':`Bearer ${token}`,'Content-Type':'multipart/form-data'}}); ElMessage.success('导入成功'); loadData() } catch(err) { ElMessage.error(err.response?.data?.message||'导入失败') }; e.target.value='' }
 function resetForm() { Object.assign(form,{line_name:'',shipping_company_id:null,departure_port_name:'',destination_port_name:'',port_sequence:'',total_distance_nm:0,description:''}) }
+const vesDialogVisible = ref(false)
+const vesLoading = ref(false)
+const currentLineId = ref(null)
+const currentLineName = ref('')
+const addVesselId = ref(null)
+const assignedVesselIds = ref([])
+const allVessels = ref([])
+
+const assignedVessels = computed(() => allVessels.value.filter(v => assignedVesselIds.value.includes(v.vessel_id)))
+const availableVessels = computed(() => allVessels.value.filter(v => !assignedVesselIds.value.includes(v.vessel_id)))
+
+async function openVesselAssign(row) {
+  currentLineId.value = row.line_id
+  currentLineName.value = row.line_name
+  addVesselId.value = null
+  vesDialogVisible.value = true
+  vesLoading.value = true
+  try {
+    const [vesRes, vesselRes] = await Promise.all([
+      getLineAssignedVesselsApi(row.line_id),
+      getVesselListApi({ page: 1, page_size: 200 })
+    ])
+    assignedVesselIds.value = vesRes.data?.vessel_ids || []
+    allVessels.value = vesselRes.data || []
+  } catch { assignedVesselIds.value = []; allVessels.value = [] }
+  finally { vesLoading.value = false }
+}
+
+async function handleAssignVessel(vesselId) {
+  if (!vesselId || !currentLineId.value) return
+  try {
+    await assignLineVesselApi(currentLineId.value, { vessel_id: vesselId })
+    ElMessage.success('船舶已分配')
+    addVesselId.value = null
+    const res = await getLineAssignedVesselsApi(currentLineId.value)
+    assignedVesselIds.value = res.data?.vessel_ids || []
+  } catch (e) { ElMessage.error(e.message || '分配失败') }
+}
+
+async function handleUnassignVessel(row) {
+  if (!currentLineId.value) return
+  try {
+    await unassignLineVesselApi(currentLineId.value, row.vessel_id)
+    ElMessage.success('已移除')
+    const res = await getLineAssignedVesselsApi(currentLineId.value)
+    assignedVesselIds.value = res.data?.vessel_ids || []
+  } catch (e) { ElMessage.error(e.message || '移除失败') }
+}
+
 function openCreate() { isEdit.value=false; editId=null; resetForm(); dialogVisible.value=true }
 function openEdit(row) { isEdit.value=true; editId=row.line_id; form.line_name=row.line_name; form.shipping_company_id=row.shipping_company_id; form.departure_port_name=row.departure_port_name; form.destination_port_name=row.destination_port_name; form.port_sequence=row.port_sequence||''; form.total_distance_nm=row.total_distance_nm; form.description=row.description||''; dialogVisible.value=true }
 async function handleSave() { saving.value=true; try { const p={line_name:form.line_name,shipping_company_id:form.shipping_company_id,departure_port_name:form.departure_port_name,destination_port_name:form.destination_port_name,port_sequence:form.port_sequence||undefined,total_distance_nm:form.total_distance_nm,description:form.description||undefined}; if(isEdit.value&&editId){await updateLineApi(editId,p);ElMessage.success('更新成功')}else{await createLineApi(p);ElMessage.success('添加成功')}; dialogVisible.value=false; await loadData() } catch(e) { ElMessage.error(e.message||'操作失败') } finally { saving.value=false } }

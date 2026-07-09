@@ -94,16 +94,16 @@
         </el-col>
       </el-row>
 
-      <div v-if="trackData&&trackData.cargo_summary&&trackData.cargo_summary.length>0" style="margin-top:16px;">
-        <div style="font-weight:600;margin-bottom:8px;">货物装载状态</div>
-        <el-table :data="trackData.cargo_summary" stripe style="width:100%">
+      <div v-if="loadedCargo.length>0" style="margin-top:16px;">
+        <div style="font-weight:600;margin-bottom:8px;">已装货物</div>
+        <el-table :data="loadedCargo" stripe style="width:100%">
           <el-table-column prop="cargo_name" label="货物名称" width="160" />
           <el-table-column prop="weight_ton" label="计划(吨)" width="90" />
           <el-table-column label="已装船(吨)" width="100"><template #default="{row}">{{ row.loaded_ton||0 }}</template></el-table-column>
           <el-table-column label="已卸货(吨)" width="100"><template #default="{row}">{{ row.discharged||0 }}</template></el-table-column>
           <el-table-column label="状态" width="100">
             <template #default="{row}">
-              <el-tag :type="{pending:'info',partial:'warning',loaded:'primary',discharged:'success'}[row.status]||'info'" size="small">{{ {pending:'待装船',partial:'部分装船',loaded:'已装船',discharged:'已卸货'}[row.status]||row.status }}</el-tag>
+              <el-tag :type="{partial:'warning',loaded:'primary',discharged:'success'}[row.status]||'info'" size="small">{{ {partial:'部分装船',loaded:'已装船',discharged:'已卸货'}[row.status]||row.status }}</el-tag>
             </template>
           </el-table-column>
         </el-table>
@@ -150,6 +150,10 @@ const plannedStops = computed(() => {
   return trackingStops.value.map(s => ({
     port_name: s.port_name, planned_arrival: s.planned_arrival, planned_departure: s.planned_departure
   }))
+})
+const loadedCargo = computed(() => {
+  if (!trackData.value?.cargo_summary) return []
+  return trackData.value.cargo_summary.filter(c => c.status !== 'pending')
 })
 const actualStops = computed(() => {
   if (!trackingStops.value || (order.value.order_status != null && order.value.order_status < 2)) return []

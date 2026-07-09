@@ -1,204 +1,329 @@
 <template>
   <div class="create-voyage-page">
-    <el-card>
-      <template #header><span>航线申请</span></template>
-      <el-form :model="form" label-width="140px" style="max-width: 1000px">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="航线" prop="line_id" :rules="[{ required: true, message: '请选择航线' }]">
-              <el-select v-model="form.line_id" filterable style="width: 100%" @change="onLineChange">
-                <el-option v-for="item in lines" :key="item.line_id" :label="item.line_name" :value="item.line_id" />
-              </el-select>
+    <el-tabs v-model="activeTab">
+      <el-tab-pane label="航线申请" name="line">
+        <el-card>
+          <template #header><span>申请新航线</span></template>
+          <el-form :model="lineForm" label-width="150px" style="max-width: 900px">
+            <el-form-item label="航线名称" prop="line_name">
+              <el-input v-model="lineForm.line_name" placeholder="如：上海港→新加坡港" />
             </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="船舶" prop="vessel_id" :rules="[{ required: true, message: '请选择船舶' }]">
-              <el-select v-model="form.vessel_id" filterable style="width: 100%">
-                <el-option v-for="item in vessels" :key="item.vessel_id" :label="`${item.vessel_name}（${item.speed_knot}节）`" :value="item.vessel_id" />
-              </el-select>
+            <el-row :gutter="16">
+              <el-col :span="12">
+                <el-form-item label="起始港" prop="departure_port_id">
+                  <el-select v-model="lineForm.departure_port_id" filterable placeholder="选择起始港" style="width:100%" @change="updatePortSequence">
+                    <el-option v-for="p in ports" :key="p.port_id" :label="p.port_name + (p.city?.country ? ' (' + p.city.country + ')' : '')" :value="p.port_id" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="目的港" prop="destination_port_id">
+                  <el-select v-model="lineForm.destination_port_id" filterable placeholder="选择目的港" style="width:100%" @change="updatePortSequence">
+                    <el-option v-for="p in ports" :key="p.port_id" :label="p.port_name + (p.city?.country ? ' (' + p.city.country + ')' : '')" :value="p.port_id" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item label="途经港口顺序">
+              <div style="width:100%">
+                <el-tag v-for="(pid, idx) in lineForm.port_sequence" :key="idx" closable :type="idx === 0 ? 'primary' : (idx === lineForm.port_sequence.length - 1 ? 'warning' : 'info')" style="margin: 2px 4px" @close="removePortSeq(idx)">
+                  {{ getPortName(pid) }}
+                </el-tag>
+                <el-select v-model="addPortId" filterable placeholder="添加途经港" style="width:200px;margin-left:4px" @change="addPortSeq">
+                  <el-option v-for="p in ports" :key="p.port_id" :label="p.port_name" :value="p.port_id" />
+                </el-select>
+              </div>
             </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="启航日期" prop="voyage_date" :rules="[{ required: true, message: '请选择日期' }]">
-              <el-date-picker v-model="form.voyage_date" type="date" style="width: 100%" value-format="YYYY-MM-DD" />
+            <el-form-item label="总航程(海里)">
+              <el-input-number v-model="lineForm.total_distance_nm" :min="0" :precision="2" :step="100" style="width:200px" />
             </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="单价(元/吨)" prop="unit_price">
-              <el-input-number v-model="form.unit_price" :min="0" :precision="2" :step="5" style="width: 100%" placeholder="每吨运费" />
+            <el-form-item label="描述">
+              <el-input v-model="lineForm.description" type="textarea" :rows="2" placeholder="航线描述（选填）" style="width:400px" />
             </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
+          </el-form>
+          <div style="margin-top: 24px;">
+            <el-button type="primary" :loading="lineSubmitting" @click="submitLine">提交航线申请</el-button>
+            <el-button @click="resetLineForm">重置</el-button>
+          </div>
+        </el-card>
+      </el-tab-pane>
 
-      <div v-if="selectedLine" style="margin-bottom: 16px; padding: 12px 16px; background: #f0f5ff; border: 1px solid #d6e4ff; border-radius: 2px;">
-        <el-row :gutter="20">
-          <el-col :span="12"><strong>航线：</strong>{{ selectedLine.line_name }}</el-col>
-          <el-col :span="12"><strong>总航程：</strong>{{ selectedLine.total_distance_nm }} 海里</el-col>
-        </el-row>
-        <el-row :gutter="20" style="margin-top: 6px;">
-          <el-col :span="12"><strong>起始港：</strong>{{ selectedLine.departure_port_name }}（{{ getPortCountry(selectedLine.departure_port_name) }}）</el-col>
-          <el-col :span="12"><strong>目的港：</strong>{{ selectedLine.destination_port_name }}（{{ getPortCountry(selectedLine.destination_port_name) }}）</el-col>
-        </el-row>
-        <el-row :gutter="20" style="margin-top: 6px;">
-          <el-col :span="24"><strong>船舶：</strong>{{ selectedVessel?.vessel_name || '-' }} | <strong>航速：</strong>{{ selectedVessel?.speed_knot || '-' }} 节 | <strong>载重：</strong>{{ selectedVessel?.max_deadweight_ton || '-' }} 吨 | <strong>单价：</strong>{{ form.unit_price > 0 ? form.unit_price + ' 元/吨' : '系统默认' }}</el-col>
-        </el-row>
-      </div>
+      <el-tab-pane label="创建航次" name="voyage">
+        <el-card>
+          <template #header><span>为已启用航线创建航次</span></template>
+          <el-form :model="voyageForm" label-width="140px" style="max-width: 1000px">
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item label="航线" prop="line_id">
+                  <el-select v-model="voyageForm.line_id" filterable style="width: 100%" @change="onLineChange">
+                    <el-option v-for="item in activeLines" :key="item.line_id" :label="item.line_name" :value="item.line_id" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="船舶" prop="vessel_id">
+                  <el-select v-model="voyageForm.vessel_id" filterable style="width: 100%">
+                    <el-option v-for="item in filteredVessels" :key="item.vessel_id" :label="`${item.vessel_name}（${item.speed_knot || '-'}节/ ${item.max_deadweight_ton || '-'}吨）`" :value="item.vessel_id" />
+                    <template #empty><span style="color:#8c8c8c">该航线未分配可用船舶</span></template>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="启航日期">
+                  <el-date-picker v-model="voyageForm.voyage_date" type="date" style="width: 100%" value-format="YYYY-MM-DD" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="单价(元/吨)">
+                  <el-input-number v-model="voyageForm.unit_price" :min="0" :precision="2" :step="5" style="width: 100%" placeholder="用于计算运费" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
 
-      <el-divider>靠泊计划</el-divider>
-      <div style="margin-bottom: 12px;">
-        <el-button type="primary" size="small" @click="addPortStop">添加途经港口</el-button>
-      </div>
+          <div v-if="selectedLine" style="margin-bottom: 16px; padding: 12px 16px; background: #f0f5ff; border: 1px solid #d6e4ff; border-radius: 2px;">
+            <el-row :gutter="20">
+              <el-col :span="12"><strong>航线：</strong>{{ selectedLine.line_name }}</el-col>
+              <el-col :span="12"><strong>总航程：</strong>{{ selectedLine.total_distance_nm }} 海里</el-col>
+            </el-row>
+            <el-row :gutter="20" style="margin-top: 6px;">
+              <el-col :span="12"><strong>起始港：</strong>{{ selectedLine.departure_port_name || '-' }}</el-col>
+              <el-col :span="12"><strong>目的港：</strong>{{ selectedLine.destination_port_name || '-' }}</el-col>
+            </el-row>
+          </div>
 
-      <el-table :data="portStops" border stripe style="width: 100%">
-        <el-table-column label="顺序" width="60">
-          <template #default="{ $index }"><strong>{{ $index + 1 }}</strong></template>
-        </el-table-column>
-        <el-table-column label="港口类型" width="100">
-          <template #default="{ $index }">
-            <el-tag v-if="$index === 0" type="primary" size="small">起始港</el-tag>
-            <el-tag v-else-if="$index === portStops.length - 1" type="warning" size="small">目的港</el-tag>
-            <el-tag v-else type="info" size="small">途经</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="港口" min-width="200">
-          <template #default="{ row, $index }">
-            <el-select v-model="row.port_id" filterable placeholder="选择港口" style="width: 100%">
-              <el-option v-for="p in ports" :key="p.port_id" :label="p.port_name + (p.city?.country ? ' (' + p.city.country + ')' : '')" :value="p.port_id" />
-            </el-select>
-          </template>
-        </el-table-column>
-        <el-table-column label="计划到达时间" min-width="180">
-          <template #default="{ row }">
-            <el-date-picker v-model="row.arrival_time" type="datetime" style="width: 100%" placeholder="选择到达时间" />
-          </template>
-        </el-table-column>
-        <el-table-column label="计划离港时间" min-width="180">
-          <template #default="{ row }">
-            <el-date-picker v-model="row.departure_time" type="datetime" style="width: 100%" placeholder="选择离港时间" />
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="80">
-          <template #default="{ $index }">
-            <el-button v-if="portStops.length > 1" size="small" type="danger" @click="portStops.splice($index, 1)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          <el-divider>靠泊计划（途经港口）</el-divider>
 
-      <div v-if="portStops.length > 0" style="margin-top: 16px; padding: 16px; background: #fafafa; border: 1px solid #e8e8e8; border-radius: 2px;">
-        <strong>航次概览：</strong>
-        <span v-for="(ps, i) in portStops" :key="i">
-          <el-tag :type="i === 0 ? 'primary' : (i === portStops.length - 1 ? 'warning' : 'info')" size="small" style="margin:0 4px;">
-            {{ getPortName(ps.port_id) || '?' }}
-          </el-tag>
-          <span v-if="i < portStops.length - 1" style="color:#8c8c8c;"> → </span>
-        </span>
-      </div>
+          <el-table :data="portStops" border stripe style="width: 100%">
+            <el-table-column label="顺序" width="60">
+              <template #default="{ $index }"><strong>{{ $index + 1 }}</strong></template>
+            </el-table-column>
+            <el-table-column label="港口类型" width="100">
+              <template #default="{ $index }">
+                <el-tag v-if="$index === 0" type="primary" size="small">起始港</el-tag>
+                <el-tag v-else-if="$index === portStops.length - 1" type="warning" size="small">目的港</el-tag>
+                <el-tag v-else type="info" size="small">途经</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="港口" min-width="200">
+              <template #default="{ row }">
+                <el-tag>{{ getPortName(row.port_id) || '?' }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="计划到达时间" min-width="180">
+              <template #default="{ row }">
+                <el-date-picker v-model="row.arrival_time" type="datetime" style="width: 100%" placeholder="选择到达时间" />
+              </template>
+            </el-table-column>
+            <el-table-column label="计划离港时间" min-width="180">
+              <template #default="{ row }">
+                <el-date-picker v-model="row.departure_time" type="datetime" style="width: 100%" placeholder="选择离港时间" />
+              </template>
+            </el-table-column>
+          </el-table>
 
-      <div style="margin-top: 24px;">
-        <el-button type="primary" size="default" :loading="submitting" @click="handleSubmit">提交申请</el-button>
-        <el-button size="default" @click="resetForm">重置</el-button>
-      </div>
-    </el-card>
+          <div v-if="portStops.length > 1" style="margin-top: 16px; padding: 16px; background: #fafafa; border: 1px solid #e8e8e8; border-radius: 2px;">
+            <strong>航次路线：</strong>
+            <span v-for="(ps, i) in portStops" :key="i">
+              <el-tag :type="i === 0 ? 'primary' : (i === portStops.length - 1 ? 'warning' : 'info')" size="small" style="margin:0 4px;">
+                {{ getPortName(ps.port_id) || '?' }}
+              </el-tag>
+              <span v-if="i < portStops.length - 1" style="color:#8c8c8c;"> → </span>
+            </span>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <el-button type="primary" :loading="voyageSubmitting" @click="submitVoyage">创建航次</el-button>
+            <el-button @click="resetVoyageForm">重置</el-button>
+          </div>
+        </el-card>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { getLineListApi, getPortListApi, getVesselListApi } from '@/api/data'
-import { createVoyageBerthingApi } from '@/api/voyage'
+import { getLineListApi, getPortListApi, getVesselListApi, getLinePortSequenceApi, getLineAssignedVesselsApi } from '@/api/data'
+import { createVoyageApi, createShippingLineApi } from '@/api/voyage'
 import { ElMessage } from 'element-plus'
-import request from '@/api/request'
 
-const lines = ref([])
+const activeTab = ref('line')
 const ports = ref([])
 const vessels = ref([])
-const submitting = ref(false)
-const form = reactive({
-  line_id: null, vessel_id: null, voyage_date: '', unit_price: 0
+const allLines = ref([])
+const lineSubmitting = ref(false)
+const voyageSubmitting = ref(false)
+const addPortId = ref(null)
+const lineAssignedVesselIds = ref([])
+
+const lineForm = reactive({
+  line_name: '',
+  departure_port_id: null,
+  destination_port_id: null,
+  port_sequence: [],
+  total_distance_nm: 0,
+  description: ''
 })
+
+const voyageForm = reactive({
+  line_id: null,
+  vessel_id: null,
+  voyage_date: '',
+  unit_price: 0
+})
+
 const portStops = ref([])
 
-const selectedLine = computed(() => lines.value.find(l => l.line_id === form.line_id))
-const selectedVessel = computed(() => vessels.value.find(v => v.vessel_id === form.vessel_id))
+const activeLines = computed(() =>
+  allLines.value.filter(l => l.line_status === 1)
+)
+
+    const selectedLine = computed(() =>
+  activeLines.value.find(l => l.line_id === voyageForm.line_id)
+)
+
+const filteredVessels = computed(() => {
+  if (lineAssignedVesselIds.value.length === 0) return vessels.value
+  return vessels.value.filter(v => lineAssignedVesselIds.value.includes(v.vessel_id))
+})
 
 function getPortName(portId) {
   const p = ports.value.find(x => x.port_id === portId)
   return p ? p.port_name : null
 }
-function getPortCountry(portName) {
-  const p = ports.value.find(x => x.port_name === portName)
-  return p?.city?.country || '—'
+
+function updatePortSequence() {
+  const seq = []
+  if (lineForm.departure_port_id) seq.push(lineForm.departure_port_id)
+  if (lineForm.destination_port_id && lineForm.destination_port_id !== lineForm.departure_port_id) {
+    seq.push(lineForm.destination_port_id)
+  }
+  lineForm.port_sequence = seq
 }
 
-function onLineChange() {
+function addPortSeq(pid) {
+  if (!pid) return
+  if (lineForm.port_sequence.indexOf(pid) >= 0) {
+    ElMessage.warning('该港口已在序列中')
+    addPortId.value = null
+    return
+  }
+  const len = lineForm.port_sequence.length
+  lineForm.port_sequence.splice(len > 0 ? len - 1 : 0, 0, pid)
+  addPortId.value = null
+}
+
+function removePortSeq(idx) {
+  lineForm.port_sequence.splice(idx, 1)
+}
+
+async function submitLine() {
+  if (!lineForm.line_name) { ElMessage.warning('请输入航线名称'); return }
+  if (!lineForm.departure_port_id) { ElMessage.warning('请选择起始港'); return }
+  if (!lineForm.destination_port_id) { ElMessage.warning('请选择目的港'); return }
+  if (lineForm.port_sequence.length < 2) { ElMessage.warning('请至少选择起始港和目的港'); return }
+
+  const depPort = ports.value.find(p => p.port_id === lineForm.departure_port_id)
+  const destPort = ports.value.find(p => p.port_id === lineForm.destination_port_id)
+
+  lineSubmitting.value = true
+  try {
+    await createShippingLineApi({
+      line_name: lineForm.line_name,
+      departure_port_name: depPort?.port_name || '',
+      destination_port_name: destPort?.port_name || '',
+      port_sequence: JSON.stringify(lineForm.port_sequence),
+      total_distance_nm: lineForm.total_distance_nm,
+      description: lineForm.description || undefined
+    })
+    ElMessage.success('航线申请已提交，等待管理员审核')
+    resetLineForm()
+  } catch (e) {
+    ElMessage.error(e.message || '提交失败')
+  } finally {
+    lineSubmitting.value = false
+  }
+}
+
+function resetLineForm() {
+  lineForm.line_name = ''
+  lineForm.departure_port_id = null
+  lineForm.destination_port_id = null
+  lineForm.port_sequence = []
+  lineForm.total_distance_nm = 0
+  lineForm.description = ''
+}
+
+async function onLineChange() {
+  voyageForm.vessel_id = null
   portStops.value = []
+  lineAssignedVesselIds.value = []
+  if (!voyageForm.line_id) return
+  try {
+    const [portsRes, vesRes] = await Promise.all([
+      getLinePortSequenceApi(voyageForm.line_id),
+      getLineAssignedVesselsApi(voyageForm.line_id)
+    ])
+    const pids = portsRes.data?.port_sequence || []
+    portStops.value = pids.map(pid => ({
+      port_id: pid,
+      arrival_time: null,
+      departure_time: null
+    }))
+    lineAssignedVesselIds.value = vesRes.data?.vessel_ids || []
+  } catch {
+    portStops.value = []
+  }
 }
 
-function addPortStop() {
-  portStops.value.push({
-    port_id: null,
-    arrival_time: null,
-    departure_time: null
-  })
-}
-
-function resetForm() {
-  form.line_id = null; form.vessel_id = null; form.voyage_date = ''
-  portStops.value = []
-}
-
-async function handleSubmit() {
-  if (!form.line_id || !form.vessel_id || !form.voyage_date) {
+async function submitVoyage() {
+  if (!voyageForm.line_id || !voyageForm.vessel_id || !voyageForm.voyage_date) {
     ElMessage.warning('请选择航线和船舶并填写启航日期'); return
   }
   if (portStops.value.length < 2) {
-    ElMessage.warning('请至少添加起始港和目的港（至少2个港口）'); return
+    ElMessage.warning('该航线的途经港口不足2个'); return
   }
-  for (const ps of portStops.value) {
-    if (!ps.port_id) { ElMessage.warning('请选择所有停靠港口'); return }
-  }
-  submitting.value = true
-  let createdIds = []
-  let successCount = 0
+  voyageSubmitting.value = true
   try {
-    for (let i = 0; i < portStops.value.length; i++) {
-      const ps = portStops.value[i]
-      const res = await createVoyageBerthingApi({
-        line_id: form.line_id,
-        vessel_id: form.vessel_id,
-        voyage_date: form.voyage_date,
-        sequence_no: i + 1,
+    await createVoyageApi({
+      line_id: voyageForm.line_id,
+      vessel_id: voyageForm.vessel_id,
+      voyage_date: voyageForm.voyage_date,
+      unit_price: voyageForm.unit_price > 0 ? voyageForm.unit_price : undefined,
+      port_stops: portStops.value.map(ps => ({
         port_id: ps.port_id,
         planned_arrival_time: ps.arrival_time || undefined,
-        planned_departure_time: ps.departure_time || undefined,
-        unit_price: form.unit_price > 0 ? form.unit_price : undefined
-      })
-      if (res?.data?.berthing_id) createdIds.push(res.data.berthing_id)
-      successCount++
-    }
-    ElMessage.success(`航线申请成功，共 ${successCount} 个靠泊港`)
-    resetForm()
+        planned_departure_time: ps.departure_time || undefined
+      }))
+    })
+    ElMessage.success('航次创建成功')
+    resetVoyageForm()
   } catch (e) {
-    for (const id of createdIds) {
-      try { await request.delete(`/berthings/${id}`) } catch {}
-    }
-    ElMessage.error(`提交失败，已回滚 ${createdIds.length} 个记录`)
+    ElMessage.error(e.message || '创建失败')
   } finally {
-    submitting.value = false
+    voyageSubmitting.value = false
   }
+}
+
+function resetVoyageForm() {
+  voyageForm.line_id = null
+  voyageForm.vessel_id = null
+  voyageForm.voyage_date = ''
+  voyageForm.unit_price = 0
+  portStops.value = []
 }
 
 onMounted(async () => {
   try {
-    const [lineRes, portRes, vesselRes] = await Promise.all([
-      getLineListApi({ page: 1, page_size: 100 }),
-      getPortListApi({ page: 1, page_size: 100 }),
-      getVesselListApi({ page: 1, page_size: 100 })
+    const [portRes, vesselRes, lineRes] = await Promise.all([
+      getPortListApi({ page: 1, page_size: 200 }),
+      getVesselListApi({ page: 1, page_size: 200 }),
+      getLineListApi({ page: 1, page_size: 200 })
     ])
-    lines.value = lineRes.data || []
     ports.value = portRes.data || []
     vessels.value = vesselRes.data || []
+    allLines.value = lineRes.data || []
   } catch { /* ignore */ }
 })
 </script>

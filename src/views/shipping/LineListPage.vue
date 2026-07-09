@@ -5,7 +5,7 @@
       <el-table-column prop="departure_port_name" label="起始港" width="120" /><el-table-column prop="destination_port_name" label="目的港" width="120" />
       <el-table-column prop="total_distance_nm" label="总距离(海里)" width="130" />
       <el-table-column label="状态" width="90"><template #default="{row}"><el-tag :type="row.line_status===1?'success':(row.line_status===0?'warning':'info')" size="small">{{ {0:'待审核',1:'已启用',2:'已弃用'}[row.line_status]||'-' }}</el-tag></template></el-table-column>
-      <el-table-column label="操作" min-width="200">
+      <el-table-column label="操作" min-width="280">
         <template #default="{ row }">
           <el-button size="small" @click="$router.push(`/shipping/line/detail/${row.line_id}`)">详情</el-button>
           <el-button v-if="row.line_status===1" size="small" type="danger" @click="handleDeprecate(row)">停用</el-button>

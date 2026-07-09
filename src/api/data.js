@@ -56,6 +56,24 @@ export function getLineListApi(params) { return request.get('/shipping-lines', {
 export function getLineDetailApi(id) { return request.get(`/shipping-lines/${id}`) }
 
 /*
+ * getLineAssignedVesselsApi — 获取航线已分配的船只
+ * GET /api/v1/shipping-lines/:id/vessels
+ */
+export function getLineAssignedVesselsApi(id) { return request.get(`/shipping-lines/${id}/vessels`) }
+
+/*
+ * assignLineVesselApi — 分配船只到航线
+ * POST /api/v1/shipping-lines/:id/vessels
+ */
+export function assignLineVesselApi(id, data) { return request.post(`/shipping-lines/${id}/vessels`, data) }
+
+/*
+ * unassignLineVesselApi — 从航线移除船只
+ * DELETE /api/v1/shipping-lines/:id/vessels/:vesselId
+ */
+export function unassignLineVesselApi(id, vesselId) { return request.delete(`/shipping-lines/${id}/vessels/${vesselId}`) }
+
+/*
  * getLinePortSequenceApi — 获取航线的港口顺序
  * GET /api/v1/shipping-lines/:id/port-sequence
  * @param {number|string} id - 航线 ID
@@ -69,3 +87,10 @@ export function getLinePortSequenceApi(id) { return request.get(`/shipping-lines
  * @param {Object} params - { page, page_size, keyword, ... }
  */
 export function getShippingCompanyListApi(params) { return request.get('/shipping-companies', { params }) }
+
+/*
+ * getCargoTypeListApi — 获取货物类型列表
+ * GET /api/v1/cargo-types
+ * 返回管理员预设的货物类型，供货主下单时选择
+ */
+export function getCargoTypeListApi() { return request.get('/cargo-types') }

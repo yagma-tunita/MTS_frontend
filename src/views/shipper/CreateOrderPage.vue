@@ -49,7 +49,7 @@
           <el-button type="primary" @click="addCargo" style="margin-bottom: 16px">添加货物</el-button>
           <el-table :data="formData.cargos" stripe style="width:100%" :fit="false">
             <el-table-column label="货物名称" width="220"><template #default="{ row }"><el-input v-model="row.cargo_name" placeholder="货物名称" /></template></el-table-column>
-            <el-table-column label="类型" width="150"><template #default="{ row }"><el-select v-model="row.cargo_type" placeholder="类型" style="width:100%"><el-option label="散货" value="bulk" /><el-option label="集装箱" value="container" /><el-option label="液体" value="liquid" /></el-select></template></el-table-column>
+            <el-table-column label="类型" width="150"><template #default="{ row }"><el-select v-model="row.cargo_type" placeholder="选择货物类型" style="width:100%"><el-option v-for="ct in cargoTypes" :key="ct.type_code" :label="ct.type_name" :value="ct.type_code" /></el-select></template></el-table-column>
             <el-table-column label="数量" width="130"><template #default="{ row }"><el-input-number v-model="row.quantity" :min="1" style="width:110px" /></template></el-table-column>
             <el-table-column label="重量(吨)" width="150"><template #default="{ row }"><el-input-number v-model="row.weight_ton" :min="0.1" :step="0.5" style="width:130px" /></template></el-table-column>
             <el-table-column label="体积(m³)" width="150"><template #default="{ row }"><el-input-number v-model="row.volume_cub_m" :min="0" :step="0.5" style="width:130px" /></template></el-table-column>
@@ -93,7 +93,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { createOrderApi, getVoyageRecommendApi } from '@/api/order'
-import { getCityListApi, getPortListApi } from '@/api/data'
+import { getCityListApi, getPortListApi, getCargoTypeListApi } from '@/api/data'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 
@@ -107,6 +107,7 @@ const destinationPorts = ref([])
 const recommendations = ref([])
 const selectedVoyage = ref(null)
 const step1Ref = ref(null)
+const cargoTypes = ref([])
 
 const formData = ref({
   departure_city_id: '', destination_city_id: '', start_port_id: '', end_port_id: '', required_ton: 10,
@@ -183,7 +184,13 @@ async function handleSubmit() {
   } catch (e) { ElMessage.error(e.message || '创建失败') }
   finally { submitting.value = false }
 }
-onMounted(loadCities)
+onMounted(async () => {
+  await loadCities()
+  try {
+    const res = await getCargoTypeListApi()
+    cargoTypes.value = res.data || []
+  } catch { /* ignore */ }
+})
 </script>
 
 <style scoped>

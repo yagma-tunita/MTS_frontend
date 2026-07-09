@@ -196,6 +196,32 @@ export function deprecateLineApi(id) { return request.post(`/admin/shipping-line
 
 /* ==================== 城市管理 ==================== */
 
+/* ==================== 货物类型管理 ==================== */
+
+/*
+ * getCargoTypeListApi — 获取货物类型列表（分页）
+ * GET /api/v1/admin/cargo-types
+ */
+export function getCargoTypeManageListApi(params) { return request.get('/admin/cargo-types', { params }) }
+
+/*
+ * createCargoTypeApi — 创建货物类型
+ * POST /api/v1/admin/cargo-types
+ */
+export function createCargoTypeApi(data) { return request.post('/admin/cargo-types', data) }
+
+/*
+ * updateCargoTypeApi — 更新货物类型
+ * PUT /api/v1/admin/cargo-types/:id
+ */
+export function updateCargoTypeApi(id, data) { return request.put(`/admin/cargo-types/${id}`, data) }
+
+/*
+ * deleteCargoTypeApi — 删除货物类型
+ * DELETE /api/v1/admin/cargo-types/:id
+ */
+export function deleteCargoTypeApi(id) { return request.delete(`/admin/cargo-types/${id}`) }
+
 /*
  * createCityApi — 创建城市
  * POST /api/v1/admin/cities
